@@ -5,7 +5,6 @@ import (
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
 	"log"
-	"strconv"
 	"time"
 )
 
@@ -26,7 +25,6 @@ func PingMetrics() (L []*model.MetricValue) {
 
 	for _, ch := range chs {
 		swPing := <-ch
-		log.Println("===", swPing)
 		L = append(L, GaugeValueIp(time.Now().Unix(), swPing.Ip, "switch.Ping", swPing.Ping))
 	}
 
@@ -36,13 +34,14 @@ func PingMetrics() (L []*model.MetricValue) {
 func pingMetrics(ip string, ch chan SwPing) {
 	var swPing SwPing
 
-	ping, err := sw.PingStatSummary(ip, g.Config().Switch.PingRetry, g.Config().Switch.PingTimeout)
+	rtt, err := sw.PingRtt(ip, g.Config().Switch.PingTimeout)
 	if err != nil {
-		log.Println(err)
+		log.Println(ip, err)
+		swPing.Ping = 0
 	}
 
 	swPing.Ip = ip
-	swPing.Ping, _ = strconv.ParseFloat(ping["avg"], 64)
+	swPing.Ping = rtt
 	ch <- swPing
 
 	return
