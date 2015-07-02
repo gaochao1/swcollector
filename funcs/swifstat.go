@@ -20,12 +20,32 @@ type ChIfStat struct {
 }
 
 var (
-	IpList  = make([]string, 3000, 5000)
 	AliveIp []string
+
+	pingTimeout int
+	pingRetry   int
+
+	community   string
+	snmpTimeout int
+	snmpRetry   int
+
+	ignoreIface []string
+	ignorePkt   bool
 )
 
-func AllSwitchIp() []string {
-	var allIp []string
+func initVariable() {
+	pingTimeout = g.Config().Switch.PingTimeout
+	pingRetry = g.Config().Switch.PingRetry
+
+	community = g.Config().Switch.Community
+	snmpTimeout = g.Config().Switch.SnmpTimeout
+	snmpRetry = g.Config().Switch.SnmpRetry
+
+	ignoreIface = g.Config().Switch.IgnoreIface
+	ignorePkt = g.Config().Switch.IgnorePkt
+}
+
+func AllSwitchIp() (allIp []string) {
 	switchIp := g.Config().Switch.IpRange
 
 	if len(switchIp) > 0 {
@@ -47,13 +67,15 @@ func SwIfMetrics() (L []*model.MetricValue) {
 }
 
 func swIfMetrics() (L []*model.MetricValue) {
+	initVariable()
+
 	allIp := AllSwitchIp()
 
 	chs := make([]chan ChIfStat, len(allIp))
 	limitCh := make(chan bool, g.Config().Switch.LimitConcur)
 
 	startTime := time.Now()
-	log.Println("INFO : UpdateIfStats the maximum number of concurrent limited to :", strconv.Itoa(g.Config().Switch.LimitConcur), "Number of all switch ip : ", len(allIp))
+	log.Printf("UpdateIfStats start. The number of concurrent limited to %d. IP addresses number is %d", g.Config().Switch.LimitConcur, len(allIp))
 
 	for i, ip := range allIp {
 		chs[i] = make(chan ChIfStat)
@@ -94,7 +116,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 	}
 
 	endTime := time.Now()
-	log.Println("INFO : UpdateIfStats complete. Process time :", endTime.Sub(startTime), "Number of live switch :", len(AliveIp))
+	log.Printf("UpdateIfStats complete. Process time %s. Number of active ip is %d", endTime.Sub(startTime), len(AliveIp))
 
 	if g.Config().Debug {
 		for i, v := range AliveIp {
@@ -102,7 +124,18 @@ func swIfMetrics() (L []*model.MetricValue) {
 		}
 	}
 
-	return L
+	return
+}
+
+func pingCheck(ip string) bool {
+	var pingResult bool
+	for i := 0; i < pingRetry; i++ {
+		pingResult = sw.Ping(ip, pingTimeout)
+		if pingResult == true {
+			break
+		}
+	}
+	return pingResult
 }
 
 func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
@@ -110,14 +143,8 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 	startTime = time.Now().Unix()
 
 	var chIfStat ChIfStat
-	var pingResult bool
 
-	for i := 0; i < g.Config().Switch.PingRetry; i++ {
-		pingResult = sw.Ping(ip, g.Config().Switch.PingTimeout)
-		if pingResult == true {
-			break
-		}
-	}
+	pingResult := pingCheck(ip)
 
 	chIfStat.Ip = ip
 	chIfStat.PingResult = pingResult
@@ -132,21 +159,18 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 		var ifList []sw.IfStats
 		var err error
 
-		vendor, _ := sw.SysVendor(ip, g.Config().Switch.Community, g.Config().Switch.SnmpTimeout)
+		vendor, _ := sw.SysVendor(ip, community, snmpTimeout)
 		if vendor == "Huawei" {
-			ifList, err = sw.ListIfStatsSnmpWalk(ip, g.Config().Switch.Community, g.Config().Switch.SnmpTimeout*5, g.Config().Switch.IgnoreIface, g.Config().Switch.SnmpRetry, g.Config().Switch.IgnorePkt)
+			ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt)
 		} else {
-			ifList, err = sw.ListIfStats(ip, g.Config().Switch.Community, g.Config().Switch.SnmpTimeout, g.Config().Switch.IgnoreIface, g.Config().Switch.SnmpRetry, g.Config().Switch.IgnorePkt)
-		}
-		if err != nil || len(ifList) == 0 {
-			endTime = time.Now().Unix()
-			chIfStat.UseTime = (endTime - startTime)
-			<-limitCh
-			ch <- chIfStat
-			return
+			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt)
 		}
 
-		for i := 0; i < len(ifList); i++ {
+		if err != nil {
+			log.Printf(ip, err)
+		}
+
+		if len(ifList) > 0 {
 			chIfStat.IfStatsList = &ifList
 		}
 
@@ -157,9 +181,5 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 		return
 	}
 
-	endTime = time.Now().Unix()
-	chIfStat.UseTime = (endTime - startTime)
-	<-limitCh
-	ch <- chIfStat
 	return
 }

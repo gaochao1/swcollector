@@ -33,8 +33,9 @@ func PingMetrics() (L []*model.MetricValue) {
 
 func pingMetrics(ip string, ch chan SwPing) {
 	var swPing SwPing
+	timeout := g.Config().Switch.PingTimeout * 4
 
-	rtt, err := sw.PingRtt(ip, g.Config().Switch.PingTimeout)
+	rtt, err := sw.PingRtt(ip, timeout)
 	if err != nil {
 		log.Println(ip, err)
 		swPing.Ping = 0

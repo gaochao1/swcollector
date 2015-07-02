@@ -62,6 +62,6 @@ Huawei交换机使用Go原生SNMP协议会报超时或乱序错误。暂时解�
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],    #忽略的接口，如Nu匹配ifName为*Nu*的接口
 		"ignorePkt": true,            #不采集IfHCInUcastPkts和IfHCOutUcastPkts		
  		"limitConcur": 1000           #限制SNMP请求并发数
-	}
+    }
 
 
