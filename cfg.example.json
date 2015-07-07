@@ -1,0 +1,38 @@
+{
+    "debug": true,
+    "hostname": "",	
+    "ip": "",
+	"switch":{
+	   "enabled": true,
+		"ipRange":[
+            "192.168.56.101/32",      
+            "192.168.56.102/32",
+            "172.16.114.233" 
+ 		],
+		"interval":10,
+		"pingTimeout":100,
+		"pingRetry":3,
+		"community":"public",
+		"snmpTimeout":100,
+		"snmpRetry":5,
+		"ignoreIface": ["Nu","NU","Vlan","Vl"],
+		"ignorePkt": true,
+		"limitConcur": 600
+ 	}, 
+    "heartbeat": {
+        "enabled": false,
+        "addr": "",
+        "interval": 60,
+        "timeout": 1000
+    },
+    "transfer": {
+        "enabled": true,
+        "addr": "127.0.0.1:8433",
+        "interval": 10,
+        "timeout": 1000
+    },
+    "http": {
+        "enabled": true,
+        "listen": ":1988"
+    }
+}
