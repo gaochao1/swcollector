@@ -44,7 +44,9 @@ Huawei交换机使用Go原生SNMP协议会报超时或乱序错误。暂时解�
 
 ##配置说明
 
-配置文件cfg.json
+配置文件请参照cfg.example.json，修改该文件名为cfg.json，将该文件里的IP换成实际使用的IP。
+
+switch配置项说明：
 
 	"switch":{
 	   "enabled": true,          
