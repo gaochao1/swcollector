@@ -9,15 +9,14 @@
             "192.168.56.102/32",
             "172.16.114.233" 
  		],
-		"interval":10,
-		"pingTimeout":100,
+ 		"pingTimeout":100,
 		"pingRetry":3,
 		"community":"public",
-		"snmpTimeout":100,
+		"snmpTimeout":1000,
 		"snmpRetry":5,
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],
 		"ignorePkt": true,
-		"limitConcur": 600
+		"limitConcur": 1000
  	}, 
     "heartbeat": {
         "enabled": false,
@@ -28,7 +27,7 @@
     "transfer": {
         "enabled": true,
         "addr": "127.0.0.1:8433",
-        "interval": 10,
+        "interval": 60,
         "timeout": 1000
     },
     "http": {
