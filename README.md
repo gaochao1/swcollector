@@ -55,11 +55,10 @@ switch配置项说明：
            "192.168.56.102/32",
            "172.16.114.233" 
  		],
-		"interval":60,					#采集间隔，单位秒
-		"pingTimeout":100, 			   #Ping超时时间，单位毫秒
+ 		"pingTimeout":300, 			   #Ping超时时间，单位毫秒
 		"pingRetry":3,				   #Ping探测重试次数
 		"community":"public",			#SNMP认证字符串
-		"snmpTimeout":100,				#SNMP超时时间，单位毫秒
+		"snmpTimeout":1000,				#SNMP超时时间，单位毫秒
 		"snmpRetry":5,					#SNMP重试次数
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],    #忽略的接口，如Nu匹配ifName为*Nu*的接口
 		"ignorePkt": true,            #不采集IfHCInUcastPkts和IfHCOutUcastPkts		

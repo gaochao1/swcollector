@@ -9,7 +9,7 @@
             "192.168.56.102/32",
             "172.16.114.233" 
  		],
- 		"pingTimeout":100,
+ 		"pingTimeout":300,
 		"pingRetry":3,
 		"community":"public",
 		"snmpTimeout":1000,
