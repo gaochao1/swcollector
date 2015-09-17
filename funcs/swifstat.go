@@ -160,7 +160,7 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 		var err error
 
 		vendor, _ := sw.SysVendor(ip, community, snmpTimeout)
-		if vendor == "Huawei" {
+		if vendor == "Huawei" || vendor == "Cisco_IOS_XR" {
 			ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt)
 		} else {
 			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt)
