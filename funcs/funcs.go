@@ -1,7 +1,7 @@
 package funcs
 
 import (
-	"github.com/gaochao1/swcollector/g"
+	"github.com/freedomkk-qfeng/swcollector/g"
 	"github.com/open-falcon/common/model"
 )
 
@@ -22,6 +22,7 @@ func BuildMappers() {
 				CpuMetrics,
 				MemMetrics,
 				PingMetrics,
+				ConnMetrics,
 			},
 			Interval: interval,
 		},
