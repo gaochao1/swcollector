@@ -35,6 +35,7 @@ func connMetrics(ip string, ch chan SwConn) {
 	var swConn SwConn
 	vendor, _ := sw.SysVendor(ip, community, snmpTimeout)
 	if vendor != "Cisco_ASA"{
+		ch <- swConn
 		return
 	}
 	ConnectionStat, err := sw.ConnectionStat(ip, g.Config().Switch.Community, g.Config().Switch.SnmpTimeout, g.Config().Switch.SnmpRetry)
