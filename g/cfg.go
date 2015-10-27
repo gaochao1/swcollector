@@ -22,7 +22,6 @@ type SwitchConfig struct {
 
 	IgnoreIface []string `json:"ignoreIface"`
 	IgnorePkt   bool     `json:"ignorePkt"`
-	DisplayByBit bool	 `json:"displayByBit"`
 	LimitConcur int      `json:"limitConcur"`
 }
 

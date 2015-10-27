@@ -12,7 +12,6 @@
 * CPU利用率
 * 内存利用率
 * Ping延时
-* 网络连接数（监控防火墙时，目前仅支持Cisco ASA)
 * IfHCInOctets
 * IfHCOutOctets
 * IfHCInUcastPkts
@@ -22,10 +21,6 @@ CPU和内存的OID私有，根据设备厂家和OS版本可能不同。目前测
 
 * Cisco IOS(Version 12)
 * Cisco NX-OS(Version 6)
-* Cisco IOS XR(Version 5)
-* Cisco IOS XE(Version 15)
-* Cisco ASA (Version 9)
-* Ruijie 10G Routing Switch
 * Huawei VRP(Version 8)
 * H3C(Version 5)
 * H3C(Version 7)
@@ -45,8 +40,6 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 使用Go原生的ICMP协议进行Ping探测，swcollector需要root权限运行。
 
 Huawei交换机使用Go原生SNMP协议会报超时或乱序错误。暂时解决方法是SNMP接口流量查询前先判断设备型号，对Huawei设备，调用snmpwalk命令进行数据收集。
-Cisco IOS XR使用源生SNMP也有些问题，亦采用snmpwalk来解决问题
-因此如果监控以上型号的交换机，需要在监控探针服务器上安装snmpwalk命令
 
 
 ##配置说明
@@ -68,8 +61,7 @@ switch配置项说明：
 		"snmpTimeout":1000,				#SNMP超时时间，单位毫秒
 		"snmpRetry":5,					#SNMP重试次数
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],    #忽略的接口，如Nu匹配ifName为*Nu*的接口
-		"ignorePkt": true,            #不采集IfHCInUcastPkts和IfHCOutUcastPkts
-		"displayByBit": true,		  #true时，上报的流量单位为bit，为false则单位为byte。		
+		"ignorePkt": true,            #不采集IfHCInUcastPkts和IfHCOutUcastPkts		
  		"limitConcur": 1000           #限制SNMP请求并发数
     }
 

@@ -101,14 +101,10 @@ func swIfMetrics() (L []*model.MetricValue) {
 				ifNameTag := "ifName=" + ifStat.IfName
 				ifIndexTag := "ifIndex=" + strconv.Itoa(ifStat.IfIndex)
 				ip := chIfStat.Ip
-				if g.Config().Switch.DisplayByBit == true {
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.In", 8*ifStat.IfHCInOctets, ifNameTag, ifIndexTag))
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.Out", 8*ifStat.IfHCOutOctets, ifNameTag, ifIndexTag))
-				}else{
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.In", ifStat.IfHCInOctets, ifNameTag, ifIndexTag))
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.Out", ifStat.IfHCOutOctets, ifNameTag, ifIndexTag))
-	
-				}
+
+				L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.In", ifStat.IfHCInOctets, ifNameTag, ifIndexTag))
+				L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.Out", ifStat.IfHCOutOctets, ifNameTag, ifIndexTag))
+
 				//如果IgnorePkt为false，采集Pkt
 				if g.Config().Switch.IgnorePkt == false {
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InPkts", ifStat.IfHCInUcastPkts, ifNameTag, ifIndexTag))
