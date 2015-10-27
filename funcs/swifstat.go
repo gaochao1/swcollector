@@ -1,11 +1,11 @@
 package funcs
 
 import (
-	"github.com/freedomkk-qfeng/swcollector/g"
+	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
 	"log"
 
-	"github.com/freedomkk-qfeng/sw"
+	"github.com/gaochao1/sw"
 	"github.com/toolkits/slice"
 
 	"strconv"
