@@ -16,7 +16,6 @@
 		"snmpRetry":5,
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],
 		"ignorePkt": true,
-		"displayByBit": true,
 		"limitConcur": 1000
  	}, 
     "heartbeat": {
