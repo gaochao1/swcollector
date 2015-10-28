@@ -69,7 +69,7 @@ switch配置项说明：
 		"snmpRetry":5,					#SNMP重试次数
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],    #忽略的接口，如Nu匹配ifName为*Nu*的接口
 		"ignorePkt": true,            #不采集IfHCInUcastPkts和IfHCOutUcastPkts
-		"displayByBit": true,		  #true时，上报的流量单位为bit，为false则单位为byte。		
+		"displayByBit": false,		  #true时，上报的流量单位为bit，为false则单位为byte。		
  		"limitConcur": 1000           #限制SNMP请求并发数
     }
 
