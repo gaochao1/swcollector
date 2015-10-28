@@ -37,6 +37,10 @@ CPU和内存的OID私有，根据设备厂家和OS版本可能不同。目前测
 	./control build
 	./control pack
 	最后一步会pack出一个tar.gz的安装包，拿着这个包去部署服务即可。
+	
+	升级时，确保先更新sw
+	cd $GOPATH/src/github.com/gaochao1/sw
+	git pull
 
 ##部署说明
 
