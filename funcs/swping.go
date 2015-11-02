@@ -38,12 +38,13 @@ func pingMetrics(ip string, ch chan SwPing) {
 	rtt, err := sw.PingRtt(ip, timeout)
 	if err != nil {
 		log.Println(ip, err)
-		swPing.Ping = 0
+		swPing.Ip = -1
+		swPing.Ping = rtt
+		ch <- swPing
+	}else{
+		swPing.Ip = ip
+		swPing.Ping = rtt
+		ch <- swPing
 	}
-
-	swPing.Ip = ip
-	swPing.Ping = rtt
-	ch <- swPing
-
 	return
 }
