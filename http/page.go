@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/gaochao1/swcollector/g"
+	"github.com/freedomkk-qfeng/swcollector/g"
 	"github.com/toolkits/file"
 	"net/http"
 	"path/filepath"

@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/freedomkk-qfeng/swcollector/funcs"
-	"github.com/gaochao1/swcollector/cron"
-	"github.com/gaochao1/swcollector/g"
-	"github.com/gaochao1/swcollector/http"
+	"github.com/freedomkk-qfeng/swcollector/cron"
+	"github.com/freedomkk-qfeng/swcollector/g"
+	"github.com/freedomkk-qfeng/swcollector/http"
 	"os"
 )
 
