@@ -3,7 +3,7 @@ package http
 import (
 	"fmt"
 	"github.com/freedomkk-qfeng/swcollector/funcs"
-	"github.com/freedomkk-qfeng/g"
+	"github.com/freedomkk-qfeng/swcollector/g"
 	"net/http"
 	"strings"
 	"time"
