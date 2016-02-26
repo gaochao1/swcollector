@@ -43,7 +43,9 @@ func pingMetrics(ip string, ch chan SwPing) {
 		ch <- swPing
 		return
 	}
-	log.Println(ip, rtt)
+	if g.Config().Debug {
+		log.Println(ip, rtt)
+	}
 	swPing.Ip = ip
 	swPing.Ping = rtt
 	ch <- swPing
