@@ -2,7 +2,7 @@ package cron
 
 import (
 	"github.com/freedomkk-qfeng/swcollector/funcs"
-	"github.com/gaochao1/swcollector/g"
+	"github.com/freedomkk-qfeng/swcollector/g"
 	"github.com/open-falcon/common/model"
 	"log"
 	"math"
