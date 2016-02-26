@@ -5,6 +5,7 @@ import (
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
 	"log"
+	"strings"
 	"time"
 )
 
