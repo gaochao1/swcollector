@@ -1,7 +1,7 @@
 package funcs
 
 import (
-	"github.com/gaochao1/sw"
+	"github.com/freedomkk-qfeng/sw"
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
 	"log"

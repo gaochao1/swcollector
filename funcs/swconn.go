@@ -1,7 +1,7 @@
 package funcs
 
 import (
-	"github.com/gaochao1/sw"
+	"github.com/freedomkk-qfeng/sw"
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
 	"log"
@@ -9,7 +9,7 @@ import (
 )
 
 type SwConn struct {
-	Ip       string
+	Ip             string
 	ConnectionStat int
 }
 
@@ -34,7 +34,7 @@ func ConnMetrics() (L []*model.MetricValue) {
 func connMetrics(ip string, ch chan SwConn) {
 	var swConn SwConn
 	vendor, _ := sw.SysVendor(ip, community, snmpTimeout)
-	if vendor != "Cisco_ASA"{
+	if !strings.Contains(vendor, "Cisco_ASA") {
 		ch <- swConn
 		return
 	}

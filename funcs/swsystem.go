@@ -1,7 +1,7 @@
 package funcs
 
 import (
-	"github.com/gaochao1/sw"
+	"github.com/freedomkk-qfeng/sw"
 	"github.com/gaochao1/swcollector/g"
 	"log"
 )
@@ -14,7 +14,7 @@ type SwSystem struct {
 	Cpu      int    `json:"cpu"`
 	Mem      int    `json:"mem"`
 	Ping     string `json:"ping"`
-	Conn	 int	`json:"Conn"`
+	Conn     int    `json:"Conn"`
 }
 
 func SwSystemInfo() (swList []SwSystem) {

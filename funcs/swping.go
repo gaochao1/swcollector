@@ -1,7 +1,7 @@
 package funcs
 
 import (
-	"github.com/gaochao1/sw"
+	"github.com/freedomkk-qfeng/sw"
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
 	"log"
@@ -41,10 +41,12 @@ func pingMetrics(ip string, ch chan SwPing) {
 		swPing.Ip = ip
 		swPing.Ping = -1
 		ch <- swPing
-	}else{
-		swPing.Ip = ip
-		swPing.Ping = rtt
-		ch <- swPing
+		return
 	}
+	log.Println(ip, rtt)
+	swPing.Ip = ip
+	swPing.Ping = rtt
+	ch <- swPing
 	return
+
 }

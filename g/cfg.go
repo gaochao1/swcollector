@@ -20,10 +20,10 @@ type SwitchConfig struct {
 	SnmpTimeout int    `json:"snmpTimeout"`
 	SnmpRetry   int    `json:"snmpRetry"`
 
-	IgnoreIface []string `json:"ignoreIface"`
-	IgnorePkt   bool     `json:"ignorePkt"`
-	DisplayByBit bool	 `json:"displayByBit"`
-	LimitConcur int      `json:"limitConcur"`
+	IgnoreIface  []string `json:"ignoreIface"`
+	IgnorePkt    bool     `json:"ignorePkt"`
+	DisplayByBit bool     `json:"displayByBit"`
+	LimitConcur  int      `json:"limitConcur"`
 }
 
 type HeartbeatConfig struct {
