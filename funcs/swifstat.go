@@ -43,6 +43,7 @@ func initVariable() {
 
 	ignoreIface = g.Config().Switch.IgnoreIface
 	ignorePkt = g.Config().Switch.IgnorePkt
+	ignoreOperStatus = g.Config().Switch.IgnoreOperStatus
 }
 
 func AllSwitchIp() (allIp []string) {
@@ -169,9 +170,9 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 
 		vendor, _ := sw.SysVendor(ip, community, snmpTimeout)
 		if vendor == "Huawei" || vendor == "Cisco_IOS_XR" {
-			ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt)
+			ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus)
 		} else {
-			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt)
+			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus)
 		}
 
 		if err != nil {

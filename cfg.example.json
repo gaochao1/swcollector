@@ -10,7 +10,7 @@
  		"pingTimeout":300,
 		"pingRetry":4,
 		"community":"public",
-		"snmpTimeout":2000,
+		"snmpTimeout":1000,
 		"snmpRetry":5,
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],
 		"ignorePkt": true,
