@@ -31,6 +31,7 @@ var (
 
 	ignoreIface []string
 	ignorePkt   bool
+	ignoreOperStatus bool
 )
 
 func initVariable() {
