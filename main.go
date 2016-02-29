@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/freedomkk-qfeng/swcollector/funcs"
 	"github.com/freedomkk-qfeng/swcollector/cron"
+	"github.com/freedomkk-qfeng/swcollector/funcs"
 	"github.com/freedomkk-qfeng/swcollector/g"
 	"github.com/freedomkk-qfeng/swcollector/http"
 	"os"

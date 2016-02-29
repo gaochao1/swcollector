@@ -17,6 +17,8 @@
 * IfHCOutOctets
 * IfHCInUcastPkts
 * IfHCOutUcastPkts
+* IfOperStatus(接口状态，1 up, 2 down, 3 testing, 4 unknown, 5 dormant, 6 notPresent, 7 lowerLayerDown)
+	
 
 CPU和内存的OID私有，根据设备厂家和OS版本可能不同。目前测试过的设备：
 
@@ -27,7 +29,11 @@ CPU和内存的OID私有，根据设备厂家和OS版本可能不同。目前测
 * Cisco ASA (Version 9)
 * Ruijie 10G Routing Switch
 * Huawei VRP(Version 8)
+* Huawei VRP(Version 5.20)
+* Huawei VRP(Version 5.120)
+* Juniper JUNOS(Version 10)
 * H3C(Version 5)
+* H3C(Version 5.20)
 * H3C(Version 7)
 
 ##源码安装
@@ -44,7 +50,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 
 使用Go原生的ICMP协议进行Ping探测，swcollector需要root权限运行。
 
-Huawei交换机使用Go原生SNMP协议会报超时或乱序错误。暂时解决方法是SNMP接口流量查询前先判断设备型号，对Huawei设备，调用snmpwalk命令进行数据收集。
+Huawei的部分交换机使用Go原生SNMP协议会报超时或乱序错误。暂时解决方法是SNMP接口流量查询前先判断设备型号，对部分Huawei设备，调用snmpwalk命令进行数据收集。
 Cisco IOS XR使用源生SNMP也有些问题，亦采用snmpwalk来解决问题
 因此如果监控以上型号的交换机，需要在监控探针服务器上安装snmpwalk命令
 
@@ -63,9 +69,9 @@ switch配置项说明：
            "172.16.114.233" 
  		],
  		"pingTimeout":300, 			   #Ping超时时间，单位毫秒
-		"pingRetry":3,				   #Ping探测重试次数
+		"pingRetry":4,				   #Ping探测重试次数
 		"community":"public",			#SNMP认证字符串
-		"snmpTimeout":1000,				#SNMP超时时间，单位毫秒
+		"snmpTimeout":2000,				#SNMP超时时间，单位毫秒
 		"snmpRetry":5,					#SNMP重试次数
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],    #忽略的接口，如Nu匹配ifName为*Nu*的接口
 		"ignorePkt": true,            #不采集IfHCInUcastPkts和IfHCOutUcastPkts

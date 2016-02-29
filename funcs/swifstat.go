@@ -101,7 +101,10 @@ func swIfMetrics() (L []*model.MetricValue) {
 				ifNameTag := "ifName=" + ifStat.IfName
 				ifIndexTag := "ifIndex=" + strconv.Itoa(ifStat.IfIndex)
 				ip := chIfStat.Ip
-				L = append(L, GaugeValueIp(ifStat.TS, ip, "switch.if.ifOperStatus", ifStat.IfOperStatus, ifNameTag, ifIndexTag))
+				if g.Config().Switch.IgnoreOperStatus == false {
+					L = append(L, GaugeValueIp(ifStat.TS, ip, "switch.if.ifOperStatus", ifStat.IfOperStatus, ifNameTag, ifIndexTag))
+				}
+
 				if g.Config().Switch.DisplayByBit == true {
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.In", 8*ifStat.IfHCInOctets, ifNameTag, ifIndexTag))
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.Out", 8*ifStat.IfHCOutOctets, ifNameTag, ifIndexTag))

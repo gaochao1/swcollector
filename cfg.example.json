@@ -1,7 +1,5 @@
 {
     "debug": true,
-    "hostname": "",	
-    "ip": "",
 	"switch":{
 	   "enabled": true,
 		"ipRange":[
@@ -10,12 +8,13 @@
             "172.16.114.233" 
  		],
  		"pingTimeout":300,
-		"pingRetry":3,
+		"pingRetry":4,
 		"community":"public",
-		"snmpTimeout":1000,
+		"snmpTimeout":2000,
 		"snmpRetry":5,
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],
 		"ignorePkt": true,
+		"ignoreOperStatus": false,
 		"displayByBit": true,
 		"limitConcur": 1000
  	}, 
