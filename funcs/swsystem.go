@@ -1,8 +1,8 @@
 package funcs
 
 import (
-	"github.com/freedomkk-qfeng/sw"
-	"github.com/freedomkk-qfeng/swcollector/g"
+	"github.com/gaochao1/sw"
+	"github.com/gaochao1/swcollector/g"
 	"log"
 )
 

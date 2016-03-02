@@ -2,7 +2,7 @@ package http
 
 import (
 	"encoding/json"
-	"github.com/freedomkk-qfeng/swcollector/g"
+	"github.com/gaochao1/swcollector/g"
 	"log"
 	"net/http"
 	_ "net/http/pprof"

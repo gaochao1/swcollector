@@ -2,8 +2,8 @@ package http
 
 import (
 	"fmt"
-	"github.com/freedomkk-qfeng/swcollector/funcs"
-	"github.com/freedomkk-qfeng/swcollector/g"
+	"github.com/gaochao1/swcollector/funcs"
+	"github.com/gaochao1/swcollector/g"
 	"net/http"
 	"strings"
 	"time"
