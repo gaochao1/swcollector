@@ -14,9 +14,9 @@
 		"snmpRetry":5,
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],
 		"ignorePkt": true,
-		"ignoreBroadcastPkt": false,
-		"ignoreMulticastPkt": false,
-		"ignoreOperStatus": false,
+		"ignoreBroadcastPkt": true,
+		"ignoreMulticastPkt": true,
+		"ignoreOperStatus": true,
 		"displayByBit": true,
 		"limitConcur": 1000
  	}, 
