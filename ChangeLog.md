@@ -23,5 +23,5 @@
 4. 去掉了默认配置文件里的 hostname 和 ip 选项，以免产生歧义，反正也没什么用…………
 
 #### bug修复 ####
-1. 修复了在并发 ping 的情况下，即便 ip 地址不同，也有小概率 ping 通地址的 bug。（很神奇是不是……反正在我这里有出现这现象。。。）。方案是替换为 [go-fastping](https://github.com/tatsushid/go-fastping) 来做 ping 探测。
+1. 修复了在并发 ping 的情况下，即便 ip 地址不通，也有小概率 ping 通地址的 bug。（很神奇是不是……反正在我这里有出现这现象。。。）。方案是替换为 [go-fastping](https://github.com/tatsushid/go-fastping) 来做 ping 探测。
 2. 修复了思科 ASA-5585 9.1 和 9.2 两个版本 cpu, memory 的 oid 不一致带来的采集问题。（这坑爹玩意!)。现在应该可以根据他的版本号来选择不同的 oid 进行采集了。
