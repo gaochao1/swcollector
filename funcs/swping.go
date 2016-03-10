@@ -34,8 +34,8 @@ func PingMetrics() (L []*model.MetricValue) {
 func pingMetrics(ip string, ch chan SwPing) {
 	var swPing SwPing
 	timeout := g.Config().Switch.PingTimeout * g.Config().Switch.PingRetry
-
-	rtt, err := sw.PingRtt(ip, timeout)
+	fastPingMode := g.Config().Switch.FastPingMode
+	rtt, err := sw.PingRtt(ip, timeout, fastPingMode)
 	if err != nil {
 		log.Println(ip, err)
 		swPing.Ip = ip

@@ -12,7 +12,7 @@
 3. 增加接口状态的采集
 	* IfOperStatus(1 up, 2 down, 3 testing, 4 unknown, 5 dormant, 6 notPresent, 7 lowerLayerDown)
 
-4. 内置了更多交换机型号的CPU，内存的OID和计算方式。（锐捷，Juniper,华为，华三的一些型号等)
+4. 内置了更多交换机型号的 CPU， 内存的 OID 和计算方式。（锐捷，Juniper, 华为， 华三的一些型号等)
 
 PS: 虽然 if 采集是并发的，不过采集项开的太多还是可能会影响 snmp 的采集效率，尤其是华为等 snmp 返回比较慢的交换机…………故谨慎选择，按需开启。
 

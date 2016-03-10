@@ -25,25 +25,26 @@ var (
 	pingTimeout int
 	pingRetry   int
 
-	community   string
-	snmpTimeout int
-	snmpRetry   int
-	displayByBit bool
-	ignoreIface []string
-	ignorePkt   bool
+	community          string
+	snmpTimeout        int
+	snmpRetry          int
+	displayByBit       bool
+	ignoreIface        []string
+	ignorePkt          bool
 	ignoreBroadcastPkt bool
 	ignoreMulticastPkt bool
-	ignoreOperStatus bool
+	ignoreOperStatus   bool
 )
 
 func initVariable() {
 	pingTimeout = g.Config().Switch.PingTimeout
+	fastPingMode = g.Config().Switch.FastPingMode
 	pingRetry = g.Config().Switch.PingRetry
 
 	community = g.Config().Switch.Community
 	snmpTimeout = g.Config().Switch.SnmpTimeout
 	snmpRetry = g.Config().Switch.SnmpRetry
-	
+
 	displayByBit = g.Config().Switch.DisplayByBit
 
 	ignoreIface = g.Config().Switch.IgnoreIface
@@ -154,7 +155,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 func pingCheck(ip string) bool {
 	var pingResult bool
 	for i := 0; i < pingRetry; i++ {
-		pingResult = sw.Ping(ip, pingTimeout)
+		pingResult = sw.Ping(ip, pingTimeout, fastPingMode)
 		if pingResult == true {
 			break
 		}
