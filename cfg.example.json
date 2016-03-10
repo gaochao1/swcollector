@@ -18,6 +18,7 @@
 		"ignoreMulticastPkt": true,
 		"ignoreOperStatus": true,
 		"displayByBit": true,
+		"fastPingMode": false,
 		"limitConcur": 1000
  	}, 
     "heartbeat": {

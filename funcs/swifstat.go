@@ -34,6 +34,7 @@ var (
 	ignoreBroadcastPkt bool
 	ignoreMulticastPkt bool
 	ignoreOperStatus   bool
+	fastPingMode       bool
 )
 
 func initVariable() {
