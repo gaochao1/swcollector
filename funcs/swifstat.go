@@ -148,6 +148,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 		for i, v := range AliveIp {
 			log.Println("AliveIp:", i, v)
 		}
+		//log.Println(L)
 	}
 
 	return
