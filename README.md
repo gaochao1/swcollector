@@ -42,6 +42,9 @@ CPU和内存的OID私有，根据设备厂家和OS版本可能不同。目前测
 * H3C(Version 5.20)
 * H3C(Version 7)
 
+##二进制安装
+从[这里](https://github.com/gaochao1/swcollector/releases) 下载编译好的最新二进制版本即可。注意：这些二进制只能跑在64位Linux上
+
 ##源码安装
 	依赖$GOPATH/src/github.com/gaochao1/sw
 	cd $GOPATH/src/github.com/gaochao1/swcollector
