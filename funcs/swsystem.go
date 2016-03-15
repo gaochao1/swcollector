@@ -14,7 +14,7 @@ type SwSystem struct {
 	Cpu      int    `json:"cpu"`
 	Mem      int    `json:"mem"`
 	Ping     string `json:"ping"`
-	Conn	 int	`json:"Conn"`
+	Conn     int    `json:"Conn"`
 }
 
 func SwSystemInfo() (swList []SwSystem) {

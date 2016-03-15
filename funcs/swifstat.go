@@ -25,24 +25,34 @@ var (
 	pingTimeout int
 	pingRetry   int
 
-	community   string
-	snmpTimeout int
-	snmpRetry   int
-
-	ignoreIface []string
-	ignorePkt   bool
+	community          string
+	snmpTimeout        int
+	snmpRetry          int
+	displayByBit       bool
+	ignoreIface        []string
+	ignorePkt          bool
+	ignoreBroadcastPkt bool
+	ignoreMulticastPkt bool
+	ignoreOperStatus   bool
+	fastPingMode       bool
 )
 
 func initVariable() {
 	pingTimeout = g.Config().Switch.PingTimeout
+	fastPingMode = g.Config().Switch.FastPingMode
 	pingRetry = g.Config().Switch.PingRetry
 
 	community = g.Config().Switch.Community
 	snmpTimeout = g.Config().Switch.SnmpTimeout
 	snmpRetry = g.Config().Switch.SnmpRetry
 
+	displayByBit = g.Config().Switch.DisplayByBit
+
 	ignoreIface = g.Config().Switch.IgnoreIface
 	ignorePkt = g.Config().Switch.IgnorePkt
+	ignoreOperStatus = g.Config().Switch.IgnoreOperStatus
+	ignoreBroadcastPkt = g.Config().Switch.IgnoreBroadcastPkt
+	ignoreMulticastPkt = g.Config().Switch.IgnoreMulticastPkt
 }
 
 func AllSwitchIp() (allIp []string) {
@@ -101,16 +111,28 @@ func swIfMetrics() (L []*model.MetricValue) {
 				ifNameTag := "ifName=" + ifStat.IfName
 				ifIndexTag := "ifIndex=" + strconv.Itoa(ifStat.IfIndex)
 				ip := chIfStat.Ip
-				if g.Config().Switch.DisplayByBit == true {
+				if ignoreOperStatus == false {
+					L = append(L, GaugeValueIp(ifStat.TS, ip, "switch.if.OperStatus", ifStat.IfOperStatus, ifNameTag, ifIndexTag))
+				}
+				if ignoreBroadcastPkt == false {
+					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InBroadcastPkt", ifStat.IfHCInBroadcastPkts, ifNameTag, ifIndexTag))
+					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutBroadcastPkt", ifStat.IfHCOutBroadcastPkts, ifNameTag, ifIndexTag))
+				}
+				if ignoreMulticastPkt == false {
+					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InMulticastPkt", ifStat.IfHCInMulticastPkts, ifNameTag, ifIndexTag))
+					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutMulticastPkt", ifStat.IfHCOutMulticastPkts, ifNameTag, ifIndexTag))
+				}
+
+				if displayByBit == true {
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.In", 8*ifStat.IfHCInOctets, ifNameTag, ifIndexTag))
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.Out", 8*ifStat.IfHCOutOctets, ifNameTag, ifIndexTag))
-				}else{
+				} else {
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.In", ifStat.IfHCInOctets, ifNameTag, ifIndexTag))
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.Out", ifStat.IfHCOutOctets, ifNameTag, ifIndexTag))
-	
+
 				}
 				//如果IgnorePkt为false，采集Pkt
-				if g.Config().Switch.IgnorePkt == false {
+				if ignorePkt == false {
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InPkts", ifStat.IfHCInUcastPkts, ifNameTag, ifIndexTag))
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutPkts", ifStat.IfHCOutUcastPkts, ifNameTag, ifIndexTag))
 				}
@@ -126,6 +148,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 		for i, v := range AliveIp {
 			log.Println("AliveIp:", i, v)
 		}
+		//log.Println(L)
 	}
 
 	return
@@ -134,7 +157,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 func pingCheck(ip string) bool {
 	var pingResult bool
 	for i := 0; i < pingRetry; i++ {
-		pingResult = sw.Ping(ip, pingTimeout)
+		pingResult = sw.Ping(ip, pingTimeout, fastPingMode)
 		if pingResult == true {
 			break
 		}
@@ -165,9 +188,9 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 
 		vendor, _ := sw.SysVendor(ip, community, snmpTimeout)
 		if vendor == "Huawei" || vendor == "Cisco_IOS_XR" {
-			ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt)
+			ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt)
 		} else {
-			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt)
+			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt)
 		}
 
 		if err != nil {

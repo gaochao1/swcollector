@@ -1,7 +1,5 @@
 {
     "debug": true,
-    "hostname": "",	
-    "ip": "",
 	"switch":{
 	   "enabled": true,
 		"ipRange":[
@@ -10,13 +8,17 @@
             "172.16.114.233" 
  		],
  		"pingTimeout":300,
-		"pingRetry":3,
+		"pingRetry":4,
 		"community":"public",
 		"snmpTimeout":1000,
 		"snmpRetry":5,
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],
 		"ignorePkt": true,
-		"displayByBit": false,
+		"ignoreBroadcastPkt": true,
+		"ignoreMulticastPkt": true,
+		"ignoreOperStatus": true,
+		"displayByBit": true,
+		"fastPingMode": false,
 		"limitConcur": 1000
  	}, 
     "heartbeat": {
@@ -33,6 +35,6 @@
     },
     "http": {
         "enabled": true,
-        "listen": ":1988"
+        "listen": ":1989"
     }
 }
