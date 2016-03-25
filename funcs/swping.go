@@ -7,6 +7,11 @@ import (
 	"github.com/baishancloud/swcollector/g"
 	"github.com/gaochao1/sw"
 	"github.com/open-falcon/common/model"
+	"github.com/toolkits/slice"
+)
+
+var (
+	AliveIp []string
 )
 
 type SwPing struct {
@@ -14,10 +19,24 @@ type SwPing struct {
 	Ping float64
 }
 
-func PingMetrics() (L []*model.MetricValue) {
+func AllSwitchIp() (allIp []string) {
+	switchIp := g.Config().Switch.IpRange
 
-	chs := make([]chan SwPing, len(AliveIp))
-	for i, ip := range AliveIp {
+	if len(switchIp) > 0 {
+		for _, sip := range switchIp {
+			aip := sw.ParseIp(sip)
+			for _, ip := range aip {
+				allIp = append(allIp, ip)
+			}
+		}
+	}
+	return allIp
+}
+
+func PingMetrics() (L []*model.MetricValue) {
+	allip := AllSwitchIp()
+	chs := make([]chan SwPing, len(allip))
+	for i, ip := range allip {
 		if ip != "" {
 			chs[i] = make(chan SwPing)
 			go pingMetrics(ip, chs[i])
@@ -26,7 +45,12 @@ func PingMetrics() (L []*model.MetricValue) {
 
 	for _, ch := range chs {
 		swPing := <-ch
-		L = append(L, GaugeValueIp(time.Now().Unix(), swPing.Ip, "switch.Ping", swPing.Ping))
+
+		if swPing.Ping > 0 && !slice.ContainsString(AliveIp, swPing.Ip) {
+			AliveIp = append(AliveIp, swPing.Ip)
+		}
+		ipTag := "ip=" + swPing.Ip
+		L = append(L, GaugeValueIp(time.Now().Unix(), swPing.Ip, "switch.Ping", swPing.Ping, ipTag))
 	}
 
 	return L

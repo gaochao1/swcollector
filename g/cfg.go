@@ -51,14 +51,15 @@ type CollectorConfig struct {
 }
 
 type GlobalConfig struct {
-	Debug     bool             `json:"debug"`
-	IP        string           `json:"ip"`
-	Hostname  string           `json:"hostname"`
-	Switch    *SwitchConfig    `json:"switch"`
-	Heartbeat *HeartbeatConfig `json:"heartbeat"`
-	Transfer  *TransferConfig  `json:"transfer"`
-	Collector *CollectorConfig `json:"collector"`
-	Http      *HttpConfig      `json:"http"`
+	Debug         bool             `json:"debug"`
+	IP            string           `json:"ip"`
+	Hostname      string           `json:"hostname"`
+	Switch        *SwitchConfig    `json:"switch"`
+	Heartbeat     *HeartbeatConfig `json:"heartbeat"`
+	Transfer      *TransferConfig  `json:"transfer"`
+	Collector     *CollectorConfig `json:"collector"`
+	Http          *HttpConfig      `json:"http"`
+	IgnoreMetrics map[string]bool  `json:"ignore"`
 }
 
 var (

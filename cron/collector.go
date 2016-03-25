@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/baishancloud/swcollector/funcs"
+	"github.com/baishancloud/swcollector/funcs/ifstat"
 	"github.com/baishancloud/swcollector/g"
 	"github.com/open-falcon/common/model"
 )
@@ -18,7 +19,7 @@ func Collect() {
 	if g.Config().Transfer.Addr == "" {
 		return
 	}
-
+	go ifstat.StartIfStatsCollector()
 	for _, v := range funcs.Mappers {
 		go collect(int64(v.Interval), v.Fs)
 	}
