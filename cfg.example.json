@@ -1,13 +1,13 @@
 {
     "debug": true,
-    "hostname": "",	
+    "hostname": "",
     "ip": "",
 	"switch":{
 	   "enabled": true,
 		"ipRange":[
-            "192.168.56.101/32",      
+            "192.168.56.101/32",
             "192.168.56.102/32",
-            "172.16.114.233" 
+            "172.16.114.233"
  		],
  		"pingTimeout":300,
 		"pingRetry":3,
@@ -17,7 +17,7 @@
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],
 		"ignorePkt": true,
 		"limitConcur": 1000
- 	}, 
+ 	},
     "heartbeat": {
         "enabled": false,
         "addr": "",
@@ -33,5 +33,18 @@
     "http": {
         "enabled": true,
         "listen": ":1988"
+    },
+	"collector": {
+        "ifacePrefix": [ "eth",
+                 "em",
+                 "bond0",
+                "p1p",
+                "p2p",
+                "p3p"],
+        "lanipnet": [
+                "127.0.0.0/8",
+                "172.16.0.0/16",
+                "10.0.0.0/8",
+                "192.168.0.0/16"]
     }
 }

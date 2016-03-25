@@ -2,10 +2,11 @@ package g
 
 import (
 	"encoding/json"
-	"github.com/toolkits/file"
 	"log"
 	"os"
 	"sync"
+
+	"github.com/toolkits/file"
 )
 
 type SwitchConfig struct {
@@ -44,6 +45,11 @@ type HttpConfig struct {
 	Listen  string `json:"listen"`
 }
 
+type CollectorConfig struct {
+	IfacePrefix []string `json:"ifacePrefix"`
+	LanIpnet    []string `json:"lanipnet"`
+}
+
 type GlobalConfig struct {
 	Debug     bool             `json:"debug"`
 	IP        string           `json:"ip"`
@@ -51,6 +57,7 @@ type GlobalConfig struct {
 	Switch    *SwitchConfig    `json:"switch"`
 	Heartbeat *HeartbeatConfig `json:"heartbeat"`
 	Transfer  *TransferConfig  `json:"transfer"`
+	Collector *CollectorConfig `json:"collector"`
 	Http      *HttpConfig      `json:"http"`
 }
 
