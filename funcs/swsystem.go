@@ -1,9 +1,10 @@
 package funcs
 
 import (
-	"github.com/gaochao1/sw"
-	"github.com/gaochao1/swcollector/g"
 	"log"
+
+	"github.com/baishancloud/swcollector/g"
+	"github.com/gaochao1/sw"
 )
 
 type SwSystem struct {

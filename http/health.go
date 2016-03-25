@@ -1,8 +1,9 @@
 package http
 
 import (
-	"github.com/gaochao1/swcollector/g"
 	"net/http"
+
+	"github.com/baishancloud/swcollector/g"
 )
 
 func configHealthRoutes() {

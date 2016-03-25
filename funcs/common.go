@@ -1,9 +1,10 @@
 package funcs
 
 import (
-	"github.com/gaochao1/swcollector/g"
-	"github.com/open-falcon/common/model"
 	"strings"
+
+	"github.com/baishancloud/swcollector/g"
+	"github.com/open-falcon/common/model"
 )
 
 func NewMetricValue(metric string, val interface{}, dataType string, tags ...string) *model.MetricValue {

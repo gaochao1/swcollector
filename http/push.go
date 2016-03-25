@@ -2,9 +2,10 @@ package http
 
 import (
 	"encoding/json"
-	"github.com/gaochao1/swcollector/g"
-	"github.com/open-falcon/common/model"
 	"net/http"
+
+	"github.com/baishancloud/swcollector/g"
+	"github.com/open-falcon/common/model"
 )
 
 func configPushRoutes() {

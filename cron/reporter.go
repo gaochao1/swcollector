@@ -2,10 +2,11 @@ package cron
 
 import (
 	"fmt"
-	"github.com/gaochao1/swcollector/g"
-	"github.com/open-falcon/common/model"
 	"log"
 	"time"
+
+	"github.com/baishancloud/swcollector/g"
+	"github.com/open-falcon/common/model"
 )
 
 func ReportAgentStatus() {

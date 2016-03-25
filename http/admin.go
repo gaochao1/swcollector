@@ -1,11 +1,12 @@
 package http
 
 import (
-	"github.com/gaochao1/swcollector/g"
-	"github.com/toolkits/file"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/baishancloud/swcollector/g"
+	"github.com/toolkits/file"
 )
 
 func configAdminRoutes() {

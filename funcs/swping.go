@@ -1,11 +1,12 @@
 package funcs
 
 import (
-	"github.com/gaochao1/sw"
-	"github.com/gaochao1/swcollector/g"
-	"github.com/open-falcon/common/model"
 	"log"
 	"time"
+
+	"github.com/baishancloud/swcollector/g"
+	"github.com/gaochao1/sw"
+	"github.com/open-falcon/common/model"
 )
 
 type SwPing struct {

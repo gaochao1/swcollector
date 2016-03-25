@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/gaochao1/swcollector/cron"
-	"github.com/gaochao1/swcollector/funcs"
-	"github.com/gaochao1/swcollector/g"
-	"github.com/gaochao1/swcollector/http"
 	"os"
+
+	"github.com/baishancloud/swcollector/cron"
+	"github.com/baishancloud/swcollector/funcs"
+	"github.com/baishancloud/swcollector/g"
+	"github.com/baishancloud/swcollector/http"
 )
 
 func main() {

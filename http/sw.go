@@ -2,11 +2,12 @@ package http
 
 import (
 	"fmt"
-	"github.com/gaochao1/swcollector/funcs"
-	"github.com/gaochao1/swcollector/g"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/baishancloud/swcollector/funcs"
+	"github.com/baishancloud/swcollector/g"
 )
 
 func configSwRoutes() {

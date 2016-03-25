@@ -1,12 +1,13 @@
 package cron
 
 import (
-	"github.com/gaochao1/swcollector/funcs"
-	"github.com/gaochao1/swcollector/g"
-	"github.com/open-falcon/common/model"
 	"log"
 	"math"
 	"time"
+
+	"github.com/baishancloud/swcollector/funcs"
+	"github.com/baishancloud/swcollector/g"
+	"github.com/open-falcon/common/model"
 )
 
 func Collect() {
