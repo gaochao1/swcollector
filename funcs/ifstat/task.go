@@ -24,37 +24,36 @@ var (
 )
 
 func AddPortMap(ip, port string, im *PortMapItem) {
+	lock.Lock()
+	defer lock.Unlock()
 	if ipm, ex := GPortMap[ip]; ex {
 		ipm[port] = im
 	} else {
-		lock.RLock()
 		ipm := make(map[string]*PortMapItem)
 		GPortMap[ip] = ipm
-		lock.RUnlock()
 		ipm[port] = im
 
 	}
 }
 func DeletePortMap(ip string) {
-	lock.RLock()
-	//defer lock.RUnlock()
+	lock.Lock()
+	defer lock.Unlock()
 	delete(GPortMap, ip)
-	lock.RUnlock()
 }
 func DeletePortMapPort(ip, port string) {
-	lock.RLock()
-	//defer lock.RUnlock()
-	//delete(GPortMap, ip)
+	lock.Lock()
+	defer lock.Unlock()
 	if ipm, ex := GPortMap[ip]; ex {
 		delete(ipm, port)
 	} else {
 		delete(GPortMap, ip)
 	}
 
-	lock.RUnlock()
 }
 
 func CheckPortMap(ip, port string) bool {
+	lock.RLock()
+	defer lock.RUnlock()
 	if ipm, ex := GPortMap[ip]; ex {
 		if im, ex := ipm[port]; ex {
 			if im.NextTime.Add(interval * 5).After(time.Now()) {
@@ -65,6 +64,8 @@ func CheckPortMap(ip, port string) bool {
 	return false
 }
 func CheckPortMapTime(ip, port string, tm time.Time) bool {
+	lock.RLock()
+	defer lock.RUnlock()
 	if ipm, ex := GPortMap[ip]; ex {
 		if im, ex := ipm[port]; ex {
 			if im.NextTime == tm {
@@ -75,6 +76,8 @@ func CheckPortMapTime(ip, port string, tm time.Time) bool {
 	return false
 }
 func CheckPortMapIP(ip string) bool {
+	lock.RLock()
+	defer lock.RUnlock()
 	if ipm, ex := GPortMap[ip]; ex {
 		for _, v := range ipm {
 			if v.NextTime.Add(interval * 6).After(time.Now()) {
@@ -85,6 +88,8 @@ func CheckPortMapIP(ip string) bool {
 	return false
 }
 func UpdatePortMapTime(ip, port string, tm time.Time) bool {
+	lock.RLock()
+	defer lock.RUnlock()
 	if ipm, ex := GPortMap[ip]; ex {
 		if im, ex := ipm[port]; ex {
 			im.NextTime = tm
