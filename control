@@ -95,7 +95,7 @@ function build() {
     if [ $? -ne 0 ]; then
         exit $?
     fi
-    mv $module $app
+    ##mv $module $app
     ./$app -v
 }
 
@@ -116,7 +116,7 @@ function packbin() {
 }
 
 function help() {
-    echo "$0 build|pack|start|stop|restart|status|tail"
+    echo "$0 build|pack|start|stop|restart|status|tail|configlocal|run"
 }
 
 if [ "$1" == "" ]; then

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/baishancloud/swcollector/g"
+	"github.com/baishancloud/octopux-swcollector/g"
 	"github.com/toolkits/file"
 )
 

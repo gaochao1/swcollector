@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/baishancloud/swcollector/funcs"
-	"github.com/baishancloud/swcollector/g"
+	"github.com/baishancloud/octopux-swcollector/funcs"
+	"github.com/baishancloud/octopux-swcollector/g"
 )
 
 func configSwRoutes() {

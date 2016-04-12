@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/baishancloud/swcollector/g"
+	"github.com/baishancloud/octopux-swcollector/g"
 )
 
 func configHealthRoutes() {

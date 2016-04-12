@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/baishancloud/swcollector/funcs"
+	"github.com/baishancloud/octopux-swcollector/funcs"
 
 	"github.com/gaochao1/gosnmp"
 	"github.com/gaochao1/sw"

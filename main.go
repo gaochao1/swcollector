@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/baishancloud/swcollector/cron"
-	"github.com/baishancloud/swcollector/funcs"
-	"github.com/baishancloud/swcollector/g"
-	"github.com/baishancloud/swcollector/http"
+	"github.com/baishancloud/octopux-swcollector/cron"
+	"github.com/baishancloud/octopux-swcollector/funcs"
+	"github.com/baishancloud/octopux-swcollector/g"
+	"github.com/baishancloud/octopux-swcollector/http"
 )
 
 func main() {

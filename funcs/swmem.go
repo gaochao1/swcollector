@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/baishancloud/swcollector/g"
+	"github.com/baishancloud/octopux-swcollector/g"
 	"github.com/gaochao1/sw"
 	"github.com/open-falcon/common/model"
 )

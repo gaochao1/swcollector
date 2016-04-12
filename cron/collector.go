@@ -5,9 +5,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/baishancloud/swcollector/funcs"
-	"github.com/baishancloud/swcollector/funcs/ifstat"
-	"github.com/baishancloud/swcollector/g"
+	"github.com/baishancloud/octopux-swcollector/funcs"
+	"github.com/baishancloud/octopux-swcollector/funcs/ifstat"
+	"github.com/baishancloud/octopux-swcollector/g"
 	"github.com/open-falcon/common/model"
 )
 

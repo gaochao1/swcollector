@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/baishancloud/swcollector/g"
+	"github.com/baishancloud/octopux-swcollector/g"
 	"github.com/open-falcon/common/model"
 )
 
