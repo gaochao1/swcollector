@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	DefaultSendQueueMaxSize      = 102400                //10.24w
-	DefaultSendTaskSleepInterval = time.Millisecond * 20 //默认睡眠间隔为50ms
+	DefaultSendQueueMaxSize      = 102400          //10.24w
+	DefaultSendTaskSleepInterval = time.Second * 1 //默认睡眠间隔为1s
 )
 
 var (
@@ -238,7 +238,7 @@ func MapIfName(ip string) {
 			if check {
 				ifIndexStr := strings.Replace(ifNamePDU.Name, ifNameOidPrefix, "", 1)
 				it := &SnmpTask{ip, ifIndexStr, ifName, false, time.Now(), interval, Flow, ignorePkt}
-				if strings.Contains(ifName, "XGigabitEthernet") || strings.Contains(ifName, "Te0") {
+				if strings.Contains(ifName, "XGigabitEthernet") || strings.Contains(ifName, "Te0") || strings.Contains(ifName, "10GE") {
 					HightQueue <- it
 				} else {
 					LowQueue <- it

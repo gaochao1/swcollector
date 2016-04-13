@@ -133,15 +133,21 @@ func CollectWorker() {
 
 	}()
 	i := 0
+	var t, tl *SnmpTask
 	for {
-		t := <-HightQueue
-		if t.NextTime.Before(time.Now()) {
+		if len(HightQueue) > 1 {
+			t = <-HightQueue
+		}
+		if t != nil && t.NextTime.Before(time.Now()) {
 			checkAndRunTask(t, HightQueue)
 			i = 0
 			continue
 		} else {
-			HightQueue <- t
-			tl := <-LowQueue
+			if t != nil {
+				HightQueue <- t
+				t = nil
+			}
+			tl = <-LowQueue
 			if tl.NextTime.Before(time.Now()) {
 				checkAndRunTask(tl, LowQueue)
 				i = 0
@@ -167,7 +173,7 @@ func CollectWorker() {
 func checkAndRunTask(t *SnmpTask, cht chan *SnmpTask) {
 	runs := handleSnmpTask(t)
 	if CheckPortMap(t.Ip, t.Ifname) {
-		t.NextTime = time.Now().Add(t.Interval- time.Second)
+		t.NextTime = time.Now().Add(t.Interval - time.Second)
 		if runs {
 			UpdatePortMapTime(t.Ip, t.Ifname, t.NextTime)
 		}
