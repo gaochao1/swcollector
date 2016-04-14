@@ -33,6 +33,7 @@ var (
 	snmpRetry   int
 
 	ignoreIface []string
+	hightIface  []string
 	ignorePkt   bool
 	interval    time.Duration
 	isdebug     bool
@@ -59,6 +60,7 @@ func initVariable() {
 	snmpRetry = g.Config().Switch.SnmpRetry
 
 	ignoreIface = g.Config().Switch.IgnoreIface
+	hightIface = g.Config().Switch.HightIface
 	ignorePkt = g.Config().Switch.IgnorePkt
 	interval = time.Duration(int64(g.Config().Transfer.Interval)) * time.Second
 	isdebug = g.Config().Debug
@@ -186,11 +188,19 @@ func MapIfNameWalk(ip string) {
 			if check {
 
 				it := &SnmpTask{ip, ifIndex, ifName, true, time.Now(), interval, Flow, ignorePkt}
-				if strings.Contains(ifName, "XGigabitEthernet") || strings.Contains(ifName, "Te0") {
-					HightQueue <- it
-				} else {
+
+				ishight := false
+				for _, hiface := range hightIface {
+					if strings.Contains(ifName, hiface) {
+						HightQueue <- it
+						ishight = true
+						break
+					}
+				}
+				if ishight == false {
 					LowQueue <- it
 				}
+
 				var im PortMapItem
 
 				im = PortMapItem{it.NextTime, it.NextTime, false}
@@ -238,11 +248,19 @@ func MapIfName(ip string) {
 			if check {
 				ifIndexStr := strings.Replace(ifNamePDU.Name, ifNameOidPrefix, "", 1)
 				it := &SnmpTask{ip, ifIndexStr, ifName, false, time.Now(), interval, Flow, ignorePkt}
-				if strings.Contains(ifName, "XGigabitEthernet") || strings.Contains(ifName, "Te0") || strings.Contains(ifName, "10GE") {
-					HightQueue <- it
-				} else {
+
+				ishight := false
+				for _, hiface := range hightIface {
+					if strings.Contains(ifName, hiface) {
+						HightQueue <- it
+						ishight = true
+						break
+					}
+				}
+				if ishight == false {
 					LowQueue <- it
 				}
+
 				var im PortMapItem
 
 				im = PortMapItem{it.NextTime, it.NextTime, false}

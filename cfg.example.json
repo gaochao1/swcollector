@@ -15,6 +15,7 @@
 		"snmpTimeout":1000,
 		"snmpRetry":5,
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],
+		"hightIface": ["XGigabitEthernet","Te0","10GE","Ten-GigabitEthernet"],
 		"ignorePkt": true,
 		"limitConcur": 1000
  	},

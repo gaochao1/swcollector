@@ -24,6 +24,7 @@ type SwitchConfig struct {
 	IgnoreIface []string `json:"ignoreIface"`
 	IgnorePkt   bool     `json:"ignorePkt"`
 	LimitConcur int      `json:"limitConcur"`
+	HightIface  []string `json:"hightIface"`
 }
 
 type HeartbeatConfig struct {
