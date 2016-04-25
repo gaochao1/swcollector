@@ -140,6 +140,7 @@ func CollectWorker() {
 		}
 		if t != nil && t.NextTime.Before(time.Now()) {
 			checkAndRunTask(t, HightQueue)
+			t = nil
 			i = 0
 			continue
 		} else {
@@ -150,6 +151,7 @@ func CollectWorker() {
 			tl = <-LowQueue
 			if tl.NextTime.Before(time.Now()) {
 				checkAndRunTask(tl, LowQueue)
+				tl = nil
 				i = 0
 				continue
 			} else {
