@@ -33,6 +33,8 @@ var (
 	ignorePkt          bool
 	ignoreBroadcastPkt bool
 	ignoreMulticastPkt bool
+	ignoreDiscards bool
+	ignoreErrors bool 
 	ignoreOperStatus   bool
 	fastPingMode       bool
 )
@@ -53,6 +55,8 @@ func initVariable() {
 	ignoreOperStatus = g.Config().Switch.IgnoreOperStatus
 	ignoreBroadcastPkt = g.Config().Switch.IgnoreBroadcastPkt
 	ignoreMulticastPkt = g.Config().Switch.IgnoreMulticastPkt
+	ignoreDiscards = g.Config().Switch.IgnoreDiscards
+	ignoreErrors = g.Config().Switch.IgnoreErrors
 }
 
 func AllSwitchIp() (allIp []string) {
@@ -123,6 +127,16 @@ func swIfMetrics() (L []*model.MetricValue) {
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutMulticastPkt", ifStat.IfHCOutMulticastPkts, ifNameTag, ifIndexTag))
 				}
 
+				if ignoreDiscards == false {
+					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InDiscards", ifStat.IfInDiscards, ifNameTag, ifIndexTag))
+					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutDiscards", ifStat.IfOutDiscards, ifNameTag, ifIndexTag))
+				}
+
+				if ignoreErrors == false {
+					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InErrors", ifStat.IfInErrors, ifNameTag, ifIndexTag))
+					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutErrors", ifStat.IfOutErrors, ifNameTag, ifIndexTag))
+				}
+
 				if displayByBit == true {
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.In", 8*ifStat.IfHCInOctets, ifNameTag, ifIndexTag))
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.Out", 8*ifStat.IfHCOutOctets, ifNameTag, ifIndexTag))
@@ -188,9 +202,11 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 
 		vendor, _ := sw.SysVendor(ip, community, snmpTimeout)
 		if vendor == "Huawei" || vendor == "Cisco_IOS_XR" {
-			ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt)
+			ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt, ignoreDiscards, ignoreErrors)
+			//ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt)
 		} else {
-			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt)
+			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt, ignoreDiscards, ignoreErrors)
+			//ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt)
 		}
 
 		if err != nil {
@@ -210,3 +226,4 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 
 	return
 }
+
