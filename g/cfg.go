@@ -25,6 +25,8 @@ type SwitchConfig struct {
 	IgnoreOperStatus   bool     `json:"ignoreOperStatus"`
 	IgnoreBroadcastPkt bool     `json:"ignoreBroadcastPkt"`
 	IgnoreMulticastPkt bool     `json:"ignoreMulticastPkt"`
+	IgnoreDiscards bool     `json:"ignoreDiscards"`
+	IgnoreErrors bool     `json:"ignoreErrors"`
 	DisplayByBit       bool     `json:"displayByBit"`
 	LimitConcur        int      `json:"limitConcur"`
 	FastPingMode       bool     `json:"fastPingMode"`
@@ -128,3 +130,4 @@ func ParseConfig(cfg string) {
 	log.Println("read config file:", cfg, "successfully")
 
 }
+
