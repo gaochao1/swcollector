@@ -1,11 +1,12 @@
 package funcs
 
 import (
+	"log"
+	"time"
+
 	"github.com/gaochao1/sw"
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
-	"log"
-	"time"
 )
 
 type SwPing struct {
@@ -42,9 +43,6 @@ func pingMetrics(ip string, ch chan SwPing) {
 		swPing.Ping = -1
 		ch <- swPing
 		return
-	}
-	if g.Config().Debug {
-		log.Println(ip, rtt)
 	}
 	swPing.Ip = ip
 	swPing.Ping = rtt

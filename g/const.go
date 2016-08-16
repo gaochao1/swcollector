@@ -10,7 +10,8 @@ import (
 // 3.1.5: more sw support, DisplayByBit cfg
 // 3.1.6
 // 3.2.0: more sw support, fix ping bug, add ifOperStatus,ifBroadcastPkt,ifMulticastPkt
+// 3.2.1 add Discards,Error,UnknownProtos,QLen，fix some bugs
 const (
-	VERSION          = "3.2.0"
+	VERSION          = "3.2.1"
 	COLLECT_INTERVAL = time.Second
 )

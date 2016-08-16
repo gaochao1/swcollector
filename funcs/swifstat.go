@@ -1,9 +1,10 @@
 package funcs
 
 import (
+	"log"
+
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
-	"log"
 
 	"github.com/gaochao1/sw"
 	"github.com/toolkits/slice"
@@ -25,18 +26,21 @@ var (
 	pingTimeout int
 	pingRetry   int
 
-	community          string
-	snmpTimeout        int
-	snmpRetry          int
-	displayByBit       bool
-	ignoreIface        []string
-	ignorePkt          bool
-	ignoreBroadcastPkt bool
-	ignoreMulticastPkt bool
-	ignoreDiscards bool
-	ignoreErrors bool 
-	ignoreOperStatus   bool
-	fastPingMode       bool
+	community           string
+	snmpTimeout         int
+	snmpRetry           int
+	displayByBit        bool
+	gosnmp              bool
+	ignoreIface         []string
+	ignorePkt           bool
+	ignoreBroadcastPkt  bool
+	ignoreMulticastPkt  bool
+	ignoreDiscards      bool
+	ignoreErrors        bool
+	ignoreOperStatus    bool
+	ignoreUnknownProtos bool
+	ignoreOutQLen       bool
+	fastPingMode        bool
 )
 
 func initVariable() {
@@ -49,7 +53,7 @@ func initVariable() {
 	snmpRetry = g.Config().Switch.SnmpRetry
 
 	displayByBit = g.Config().Switch.DisplayByBit
-
+	gosnmp = g.Config().Switch.Gosnmp
 	ignoreIface = g.Config().Switch.IgnoreIface
 	ignorePkt = g.Config().Switch.IgnorePkt
 	ignoreOperStatus = g.Config().Switch.IgnoreOperStatus
@@ -57,6 +61,8 @@ func initVariable() {
 	ignoreMulticastPkt = g.Config().Switch.IgnoreMulticastPkt
 	ignoreDiscards = g.Config().Switch.IgnoreDiscards
 	ignoreErrors = g.Config().Switch.IgnoreErrors
+	ignoreUnknownProtos = g.Config().Switch.IgnoreUnknownProtos
+	ignoreOutQLen = g.Config().Switch.IgnoreOutQLen
 }
 
 func AllSwitchIp() (allIp []string) {
@@ -90,7 +96,11 @@ func swIfMetrics() (L []*model.MetricValue) {
 
 	startTime := time.Now()
 	log.Printf("UpdateIfStats start. The number of concurrent limited to %d. IP addresses number is %d", g.Config().Switch.LimitConcur, len(allIp))
-
+	if gosnmp {
+		log.Println("get snmp message by gosnmp")
+	} else {
+		log.Println("get snmp message by snmpwalk")
+	}
 	for i, ip := range allIp {
 		chs[i] = make(chan ChIfStat)
 		limitCh <- true
@@ -108,7 +118,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 		if chIfStat.IfStatsList != nil {
 
 			if g.Config().Debug {
-				log.Println(chIfStat.Ip, chIfStat.PingResult, len(*chIfStat.IfStatsList), chIfStat.UseTime)
+				log.Println("IP:", chIfStat.Ip, "PingResult:", chIfStat.PingResult, "len_list:", len(*chIfStat.IfStatsList), "UsedTime:", chIfStat.UseTime)
 			}
 
 			for _, ifStat := range *chIfStat.IfStatsList {
@@ -137,6 +147,14 @@ func swIfMetrics() (L []*model.MetricValue) {
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutErrors", ifStat.IfOutErrors, ifNameTag, ifIndexTag))
 				}
 
+				if ignoreUnknownProtos == false {
+					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InUnknownProtos", ifStat.IfInUnknownProtos, ifNameTag, ifIndexTag))
+				}
+
+				if ignoreOutQLen == false {
+					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutQLen", ifStat.IfOutQLen, ifNameTag, ifIndexTag))
+				}
+
 				if displayByBit == true {
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.In", 8*ifStat.IfHCInOctets, ifNameTag, ifIndexTag))
 					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.Out", 8*ifStat.IfHCOutOctets, ifNameTag, ifIndexTag))
@@ -162,7 +180,6 @@ func swIfMetrics() (L []*model.MetricValue) {
 		for i, v := range AliveIp {
 			log.Println("AliveIp:", i, v)
 		}
-		//log.Println(L)
 	}
 
 	return
@@ -200,13 +217,10 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 		var ifList []sw.IfStats
 		var err error
 
-		vendor, _ := sw.SysVendor(ip, community, snmpTimeout)
-		if vendor == "Huawei" || vendor == "Cisco_IOS_XR" {
-			ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt, ignoreDiscards, ignoreErrors)
-			//ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt)
+		if gosnmp {
+			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt, ignoreDiscards, ignoreErrors, ignoreUnknownProtos, ignoreOutQLen)
 		} else {
-			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt, ignoreDiscards, ignoreErrors)
-			//ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt)
+			ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt, ignoreDiscards, ignoreErrors, ignoreUnknownProtos, ignoreOutQLen)
 		}
 
 		if err != nil {
@@ -226,4 +240,3 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 
 	return
 }
-

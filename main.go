@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/gaochao1/swcollector/cron"
 	"github.com/gaochao1/swcollector/funcs"
 	"github.com/gaochao1/swcollector/g"
 	"github.com/gaochao1/swcollector/http"
-	"os"
 )
 
 func main() {
@@ -36,9 +37,6 @@ func main() {
 
 	funcs.BuildMappers()
 
-	cron.ReportAgentStatus()
-	cron.SyncBuiltinMetrics()
-	cron.SyncTrustableIps()
 	cron.Collect()
 
 	go http.Start()

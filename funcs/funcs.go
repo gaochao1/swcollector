@@ -18,7 +18,6 @@ func BuildMappers() {
 		FuncsAndInterval{
 			Fs: []func() []*model.MetricValue{
 				SwIfMetrics,
-				AgentMetrics,
 				CpuMetrics,
 				MemMetrics,
 				PingMetrics,
