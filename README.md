@@ -83,8 +83,13 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 {
     "debug": true,
 	"debugmetric":{                   # 在日志中 debug 具体的指标
+<<<<<<< HEAD
 		"endpoints":["192.168.56.101","192.168.56.102"],  # 必填
 		"metrics":["switch.if.In","switch.if.Out"],      # 必填
+=======
+		"endpoint":"192.168.56.101",  # 必填
+		"metric":"switch.if.In",      # 必填
+>>>>>>> origin/master
 		"tags":"ifName=Fa0/1"         # 有则匹配 tag,如为 "" 则打印该 metric 的全部信息
 	},
 	"switch":{

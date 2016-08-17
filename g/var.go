@@ -50,14 +50,23 @@ func SendToTransfer(metrics []*model.MetricValue) {
 	}
 
 	debug := Config().Debug
+<<<<<<< HEAD
 	debug_endpoints := Config().Debugmetric.Endpoints
 	debug_metrics := Config().Debugmetric.Metrics
+=======
+	debug_endpoint := Config().Debugmetric.Endpoint
+	debug_metric := Config().Debugmetric.Metric
+>>>>>>> origin/master
 	debug_tags := Config().Debugmetric.Tags
 	debug_Tags := strings.Split(debug_tags, ",")
 	if debug {
 		for _, metric := range metrics {
 			metric_tags := strings.Split(metric.Tags, ",")
+<<<<<<< HEAD
 			if in_array(metric.Endpoint, debug_endpoints) && in_array(metric.Metric, debug_metrics) {
+=======
+			if metric.Endpoint == debug_endpoint && metric.Metric == debug_metric {
+>>>>>>> origin/master
 				if array_include(debug_Tags, metric_tags) {
 					log.Printf("=> <Total=%d> %v\n", len(metrics), metric)
 				}

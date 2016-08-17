@@ -1,8 +1,13 @@
 {
     "debug": true,
 	"debugmetric":{
+<<<<<<< HEAD
 		"endpoints":["192.168.56.101","192.168.56.102"],
 		"metrics":["switch.if.In","switch.if.Out"],
+=======
+		"endpoint":"192.168.56.101",
+		"metric":"switch.if.In",
+>>>>>>> origin/master
 		"tags":"ifName=Fa0/1"
 	},
 	"switch":{
