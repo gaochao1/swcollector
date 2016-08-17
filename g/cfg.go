@@ -10,15 +10,9 @@ import (
 )
 
 type DebugmetricConfig struct {
-<<<<<<< HEAD
 	Endpoints []string `json:"endpoints`
 	Metrics   []string `json:"metrics`
 	Tags      string   `json:"tags"`
-=======
-	Endpoint string `json:"endpoint`
-	Metric   string `json:"metric`
-	Tags     string `json:"tags"`
->>>>>>> origin/master
 }
 
 type SwitchConfig struct {
