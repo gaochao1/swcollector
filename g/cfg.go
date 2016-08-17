@@ -2,16 +2,23 @@ package g
 
 import (
 	"encoding/json"
-	"github.com/toolkits/file"
 	"log"
 	"os"
 	"sync"
+
+	"github.com/toolkits/file"
 )
 
+type DebugmetricConfig struct {
+	Endpoints []string `json:"endpoints`
+	Metrics   []string `json:"metrics`
+	Tags      string   `json:"tags"`
+}
+
 type SwitchConfig struct {
-	Enabled  bool     `json:"enabled"`
-	IpRange  []string `json:"ipRange"`
-	Interval int      `json:"interval"`
+	Enabled bool     `json:"enabled"`
+	IpRange []string `json:"ipRange"`
+	Gosnmp  bool     `json:"gosnmp"`
 
 	PingTimeout int `json:"pingTimeout"`
 	PingRetry   int `json:"pingRetry"`
@@ -20,16 +27,18 @@ type SwitchConfig struct {
 	SnmpTimeout int    `json:"snmpTimeout"`
 	SnmpRetry   int    `json:"snmpRetry"`
 
-	IgnoreIface        []string `json:"ignoreIface"`
-	IgnorePkt          bool     `json:"ignorePkt"`
-	IgnoreOperStatus   bool     `json:"ignoreOperStatus"`
-	IgnoreBroadcastPkt bool     `json:"ignoreBroadcastPkt"`
-	IgnoreMulticastPkt bool     `json:"ignoreMulticastPkt"`
-	IgnoreDiscards bool     `json:"ignoreDiscards"`
-	IgnoreErrors bool     `json:"ignoreErrors"`
-	DisplayByBit       bool     `json:"displayByBit"`
-	LimitConcur        int      `json:"limitConcur"`
-	FastPingMode       bool     `json:"fastPingMode"`
+	IgnoreIface         []string `json:"ignoreIface"`
+	IgnorePkt           bool     `json:"ignorePkt"`
+	IgnoreOperStatus    bool     `json:"ignoreOperStatus"`
+	IgnoreBroadcastPkt  bool     `json:"ignoreBroadcastPkt"`
+	IgnoreMulticastPkt  bool     `json:"ignoreMulticastPkt"`
+	IgnoreDiscards      bool     `json:"ignoreDiscards"`
+	IgnoreErrors        bool     `json:"ignoreErrors"`
+	IgnoreUnknownProtos bool     `json:"ignoreUnknownProtos`
+	IgnoreOutQLen       bool     `json:"ignoreOutQLen`
+	DisplayByBit        bool     `json:"displayByBit"`
+	LimitConcur         int      `json:"limitConcur"`
+	FastPingMode        bool     `json:"fastPingMode"`
 }
 
 type HeartbeatConfig struct {
@@ -52,13 +61,14 @@ type HttpConfig struct {
 }
 
 type GlobalConfig struct {
-	Debug     bool             `json:"debug"`
-	IP        string           `json:"ip"`
-	Hostname  string           `json:"hostname"`
-	Switch    *SwitchConfig    `json:"switch"`
-	Heartbeat *HeartbeatConfig `json:"heartbeat"`
-	Transfer  *TransferConfig  `json:"transfer"`
-	Http      *HttpConfig      `json:"http"`
+	Debug       bool               `json:"debug"`
+	Debugmetric *DebugmetricConfig `json:"debugmetric`
+	IP          string             `json:"ip"`
+	Hostname    string             `json:"hostname"`
+	Switch      *SwitchConfig      `json:"switch"`
+	Heartbeat   *HeartbeatConfig   `json:"heartbeat"`
+	Transfer    *TransferConfig    `json:"transfer"`
+	Http        *HttpConfig        `json:"http"`
 }
 
 var (
@@ -130,4 +140,3 @@ func ParseConfig(cfg string) {
 	log.Println("read config file:", cfg, "successfully")
 
 }
-

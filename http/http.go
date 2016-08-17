@@ -2,10 +2,11 @@ package http
 
 import (
 	"encoding/json"
-	"github.com/gaochao1/swcollector/g"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
+
+	"github.com/gaochao1/swcollector/g"
 )
 
 type Dto struct {
@@ -18,7 +19,6 @@ func init() {
 	configHealthRoutes()
 	configPageRoutes()
 	configPushRoutes()
-	configRunRoutes()
 	configSwRoutes()
 }
 

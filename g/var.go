@@ -1,14 +1,14 @@
 package g
 
 import (
-	"github.com/open-falcon/common/model"
-	"github.com/toolkits/net"
-	"github.com/toolkits/slice"
 	"log"
 	"os"
 	"strings"
-	"sync"
+
 	"time"
+
+	"github.com/open-falcon/common/model"
+	"github.com/toolkits/net"
 )
 
 var Root string
@@ -32,18 +32,10 @@ func InitLocalIps() {
 }
 
 var (
-	HbsClient      *SingleConnRpcClient
 	TransferClient *SingleConnRpcClient
 )
 
 func InitRpcClients() {
-	if Config().Heartbeat.Enabled {
-		HbsClient = &SingleConnRpcClient{
-			RpcServer: Config().Heartbeat.Addr,
-			Timeout:   time.Duration(Config().Heartbeat.Timeout) * time.Millisecond,
-		}
-	}
-
 	if Config().Transfer.Enabled {
 		TransferClient = &SingleConnRpcClient{
 			RpcServer: Config().Transfer.Addr,
@@ -58,9 +50,23 @@ func SendToTransfer(metrics []*model.MetricValue) {
 	}
 
 	debug := Config().Debug
-
+	debug_endpoints := Config().Debugmetric.Endpoints
+	debug_metrics := Config().Debugmetric.Metrics
+	debug_tags := Config().Debugmetric.Tags
+	debug_Tags := strings.Split(debug_tags, ",")
 	if debug {
-		log.Printf("=> <Total=%d> %v\n", len(metrics), metrics[0])
+		for _, metric := range metrics {
+			metric_tags := strings.Split(metric.Tags, ",")
+			if in_array(metric.Endpoint, debug_endpoints) && in_array(metric.Metric, debug_metrics) {
+				if array_include(debug_Tags, metric_tags) {
+					log.Printf("=> <Total=%d> %v\n", len(metrics), metric)
+				}
+				if debug_tags == "" {
+					log.Printf("=> <Total=%d> %v\n", len(metrics), metric)
+				}
+
+			}
+		}
 	}
 
 	var resp model.TransferResponse
@@ -74,71 +80,22 @@ func SendToTransfer(metrics []*model.MetricValue) {
 	}
 }
 
-var (
-	reportPorts     []int64
-	reportPortsLock = new(sync.RWMutex)
-)
-
-func ReportPorts() []int64 {
-	reportPortsLock.RLock()
-	defer reportPortsLock.RUnlock()
-	return reportPorts
-}
-
-func SetReportPorts(ports []int64) {
-	reportPortsLock.Lock()
-	defer reportPortsLock.Unlock()
-	reportPorts = ports
-}
-
-var (
-	// tags => {1=>name, 2=>cmdline}
-	// e.g. 'name=falcon-agent'=>{1=>falcon-agent}
-	// e.g. 'cmdline=xx'=>{2=>xx}
-	reportProcs     map[string]map[int]string
-	reportProcsLock = new(sync.RWMutex)
-)
-
-func ReportProcs() map[string]map[int]string {
-	reportProcsLock.RLock()
-	defer reportProcsLock.RUnlock()
-	return reportProcs
-}
-
-func SetReportProcs(procs map[string]map[int]string) {
-	reportProcsLock.Lock()
-	defer reportProcsLock.Unlock()
-	reportProcs = procs
-}
-
-var (
-	ips     []string
-	ipsLock = new(sync.Mutex)
-)
-
-func TrustableIps() []string {
-	ipsLock.Lock()
-	defer ipsLock.Unlock()
-	return ips
-}
-
-func SetTrustableIps(ipStr string) {
-	arr := strings.Split(ipStr, ",")
-	ipsLock.Lock()
-	defer ipsLock.Unlock()
-	ips = arr
-}
-
-func IsTrustable(remoteAddr string) bool {
-	ip := remoteAddr
-	idx := strings.LastIndex(remoteAddr, ":")
-	if idx > 0 {
-		ip = remoteAddr[0:idx]
+func array_include(array_a []string, array_b []string) bool { //b include a
+	for _, v := range array_a {
+		if in_array(v, array_b) {
+			continue
+		} else {
+			return false
+		}
 	}
+	return true
+}
 
-	if ip == "127.0.0.1" {
-		return true
+func in_array(a string, array []string) bool {
+	for _, v := range array {
+		if a == v {
+			return true
+		}
 	}
-
-	return slice.ContainsString(TrustableIps(), ip)
+	return false
 }
