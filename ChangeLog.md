@@ -1,4 +1,6 @@
 # Changelog #
+## 3.2.1.1 ##
+1. debugmetric 现在支持配置多个 endpoint 和 metric 了
 ## 3.2.1 ##
 #### 新功能 ####
 1. 增加接口丢包数量的采集
