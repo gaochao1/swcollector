@@ -1,12 +1,13 @@
 package funcs
 
 import (
-	"github.com/gaochao1/sw"
-	"github.com/gaochao1/swcollector/g"
-	"github.com/open-falcon/common/model"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/gaochao1/sw"
+	"github.com/gaochao1/swcollector/g"
+	"github.com/open-falcon/common/model"
 )
 
 type SwConn struct {
@@ -42,6 +43,7 @@ func connMetrics(ip string, ch chan SwConn) {
 	ConnectionStat, err := sw.ConnectionStat(ip, g.Config().Switch.Community, g.Config().Switch.SnmpTimeout, g.Config().Switch.SnmpRetry)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	swConn.Ip = ip

@@ -27,18 +27,25 @@ type SwitchConfig struct {
 	SnmpTimeout int    `json:"snmpTimeout"`
 	SnmpRetry   int    `json:"snmpRetry"`
 
-	IgnoreIface         []string `json:"ignoreIface"`
-	IgnorePkt           bool     `json:"ignorePkt"`
-	IgnoreOperStatus    bool     `json:"ignoreOperStatus"`
-	IgnoreBroadcastPkt  bool     `json:"ignoreBroadcastPkt"`
-	IgnoreMulticastPkt  bool     `json:"ignoreMulticastPkt"`
-	IgnoreDiscards      bool     `json:"ignoreDiscards"`
-	IgnoreErrors        bool     `json:"ignoreErrors"`
-	IgnoreUnknownProtos bool     `json:"ignoreUnknownProtos`
-	IgnoreOutQLen       bool     `json:"ignoreOutQLen`
-	DisplayByBit        bool     `json:"displayByBit"`
-	LimitConcur         int      `json:"limitConcur"`
-	FastPingMode        bool     `json:"fastPingMode"`
+	IgnoreIface           []string `json:"ignoreIface"`
+	IgnoreOperStatus      bool     `json:"ignoreOperStatus"`
+	Speedlimit            float64  `json:"speedlimit"`
+	IgnorePkt             bool     `json:"ignorePkt"`
+	Pktlimit              float64  `json:"pktlimit"`
+	IgnoreBroadcastPkt    bool     `json:"ignoreBroadcastPkt"`
+	BroadcastPktlimit     float64  `josn:"broadcastPktlimit"`
+	IgnoreMulticastPkt    bool     `json:"ignoreMulticastPkt"`
+	MulticastPktlimit     float64  `json:"multicastPktlimit"`
+	IgnoreDiscards        bool     `json:"ignoreDiscards"`
+	DiscardsPktlimit      float64  `json:"discardsPktlimit"`
+	IgnoreErrors          bool     `json:"ignoreErrors"`
+	ErrorsPktlimit        float64  `json:"errorsPktlimit"`
+	IgnoreUnknownProtos   bool     `json:"ignoreUnknownProtos`
+	UnknownProtosPktlimit float64  `json:"unknownProtosPktlimit"`
+	IgnoreOutQLen         bool     `json:"ignoreOutQLen`
+	OutQLenPktlimit       float64  `json:"outQLenPktlimit"`
+	LimitConcur           int      `json:"limitConcur"`
+	FastPingMode          bool     `json:"fastPingMode"`
 }
 
 type HeartbeatConfig struct {

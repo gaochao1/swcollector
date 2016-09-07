@@ -21,8 +21,8 @@ type ChIfStat struct {
 }
 
 var (
-	AliveIp []string
-
+	AliveIp     []string
+	lastIfStat  = map[string]*[]sw.IfStats{}
 	pingTimeout int
 	pingRetry   int
 
@@ -40,6 +40,7 @@ var (
 	ignoreOperStatus    bool
 	ignoreUnknownProtos bool
 	ignoreOutQLen       bool
+	ignoreSpeedPercent  bool
 	fastPingMode        bool
 )
 
@@ -52,7 +53,6 @@ func initVariable() {
 	snmpTimeout = g.Config().Switch.SnmpTimeout
 	snmpRetry = g.Config().Switch.SnmpRetry
 
-	displayByBit = g.Config().Switch.DisplayByBit
 	gosnmp = g.Config().Switch.Gosnmp
 	ignoreIface = g.Config().Switch.IgnoreIface
 	ignorePkt = g.Config().Switch.IgnorePkt
@@ -88,12 +88,11 @@ func SwIfMetrics() (L []*model.MetricValue) {
 
 func swIfMetrics() (L []*model.MetricValue) {
 	initVariable()
-
+	ts := time.Now().Unix()
 	allIp := AllSwitchIp()
 
 	chs := make([]chan ChIfStat, len(allIp))
 	limitCh := make(chan bool, g.Config().Switch.LimitConcur)
-
 	startTime := time.Now()
 	log.Printf("UpdateIfStats start. The number of concurrent limited to %d. IP addresses number is %d", g.Config().Switch.LimitConcur, len(allIp))
 	if gosnmp {
@@ -107,16 +106,13 @@ func swIfMetrics() (L []*model.MetricValue) {
 		go coreSwIfMetrics(ip, chs[i], limitCh)
 		time.Sleep(5 * time.Millisecond)
 	}
-
 	for _, ch := range chs {
 		chIfStat := <-ch
 
 		if chIfStat.PingResult == true && !slice.ContainsString(AliveIp, chIfStat.Ip) {
 			AliveIp = append(AliveIp, chIfStat.Ip)
 		}
-
 		if chIfStat.IfStatsList != nil {
-
 			if g.Config().Debug {
 				log.Println("IP:", chIfStat.Ip, "PingResult:", chIfStat.PingResult, "len_list:", len(*chIfStat.IfStatsList), "UsedTime:", chIfStat.UseTime)
 			}
@@ -128,49 +124,215 @@ func swIfMetrics() (L []*model.MetricValue) {
 				if ignoreOperStatus == false {
 					L = append(L, GaugeValueIp(ifStat.TS, ip, "switch.if.OperStatus", ifStat.IfOperStatus, ifNameTag, ifIndexTag))
 				}
+				if ignoreSpeedPercent == false {
+					L = append(L, GaugeValueIp(ifStat.TS, ip, "switch.if.Speed", ifStat.IfSpeed, ifNameTag, ifIndexTag))
+				}
 				if ignoreBroadcastPkt == false {
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InBroadcastPkt", ifStat.IfHCInBroadcastPkts, ifNameTag, ifIndexTag))
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutBroadcastPkt", ifStat.IfHCOutBroadcastPkts, ifNameTag, ifIndexTag))
+					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+						for _, lastifStat := range *lastIfStatList {
+							if ifStat.IfIndex == lastifStat.IfIndex {
+								interval := ifStat.TS - lastifStat.TS
+								broadcastlimit := g.Config().Switch.BroadcastPktlimit
+								IfHCInBroadcastPkts := float64(ifStat.IfHCInBroadcastPkts-lastifStat.IfHCInBroadcastPkts) / float64(interval)
+								IfHCOutBroadcastPkts := float64(ifStat.IfHCOutBroadcastPkts-lastifStat.IfHCOutBroadcastPkts) / float64(interval)
+								if IfHCInBroadcastPkts >= 0 && IfHCInBroadcastPkts <= broadcastlimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.InBroadcastPkt", IfHCInBroadcastPkts, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.InBroadcastPkt ", "out of range, value is ", IfHCInBroadcastPkts, "Limit is ", broadcastlimit)
+									log.Println("IfHCInBroadcastPkts This Time: ", ifStat.IfHCInBroadcastPkts)
+									log.Println("IfHCInBroadcastPkts Last Time: ", lastifStat.IfHCInBroadcastPkts)
+								}
+								if IfHCOutBroadcastPkts >= 0 && IfHCOutBroadcastPkts <= broadcastlimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutBroadcastPkt", IfHCOutBroadcastPkts, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.OutBroadcastPkt ", "out of range, value is ", IfHCOutBroadcastPkts, "Limit is ", broadcastlimit)
+									log.Println("IfHCOutBroadcastPkts This Time: ", ifStat.IfHCOutBroadcastPkts)
+									log.Println("IfHCOutBroadcastPkts Last Time: ", lastifStat.IfHCOutBroadcastPkts)
+								}
+							}
+						}
+					}
 				}
 				if ignoreMulticastPkt == false {
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InMulticastPkt", ifStat.IfHCInMulticastPkts, ifNameTag, ifIndexTag))
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutMulticastPkt", ifStat.IfHCOutMulticastPkts, ifNameTag, ifIndexTag))
+					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+						for _, lastifStat := range *lastIfStatList {
+							if ifStat.IfIndex == lastifStat.IfIndex {
+								interval := ifStat.TS - lastifStat.TS
+								multicastlimit := g.Config().Switch.MulticastPktlimit
+								IfHCInMulticastPkts := float64(ifStat.IfHCInMulticastPkts-lastifStat.IfHCInMulticastPkts) / float64(interval)
+								IfHCOutMulticastPkts := float64(ifStat.IfHCOutMulticastPkts-lastifStat.IfHCOutMulticastPkts) / float64(interval)
+								if IfHCInMulticastPkts >= 0 && IfHCInMulticastPkts <= multicastlimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.InMulticastPkt", IfHCInMulticastPkts, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.InMulticastPkt ", "out of range, value is ", IfHCInMulticastPkts, "Limit is ", multicastlimit)
+									log.Println("IfHCInMulticastPkts This Time: ", ifStat.IfHCInMulticastPkts)
+									log.Println("IfHCInMulticastPkts Last Time: ", lastifStat.IfHCInMulticastPkts)
+								}
+								if IfHCOutMulticastPkts >= 0 && IfHCOutMulticastPkts <= multicastlimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutMulticastPkt", IfHCOutMulticastPkts, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.OutMulticastPkt ", "out of range, value is ", IfHCOutMulticastPkts, "Limit is ", multicastlimit)
+									log.Println("IfHCOutMulticastPkts This Time: ", ifStat.IfHCOutMulticastPkts)
+									log.Println("IfHCOutMulticastPkts Last Time: ", lastifStat.IfHCOutMulticastPkts)
+								}
+							}
+						}
+					}
 				}
 
 				if ignoreDiscards == false {
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InDiscards", ifStat.IfInDiscards, ifNameTag, ifIndexTag))
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutDiscards", ifStat.IfOutDiscards, ifNameTag, ifIndexTag))
+					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+						for _, lastifStat := range *lastIfStatList {
+							if ifStat.IfIndex == lastifStat.IfIndex {
+								interval := ifStat.TS - lastifStat.TS
+								discardlimit := g.Config().Switch.DiscardsPktlimit
+								IfInDiscards := float64(ifStat.IfInDiscards-lastifStat.IfInDiscards) / float64(interval)
+								IfOutDiscards := float64(ifStat.IfOutDiscards-lastifStat.IfOutDiscards) / float64(interval)
+								if IfInDiscards >= 0 && IfInDiscards <= discardlimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.InDiscards", IfInDiscards, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.InDiscards ", "out of range, value is ", IfInDiscards, "Limit is ", discardlimit)
+									log.Println("IfInDiscards This Time: ", ifStat.IfInDiscards)
+									log.Println("IfInDiscards Last Time: ", lastifStat.IfInDiscards)
+								}
+								if IfOutDiscards >= 0 && IfOutDiscards <= discardlimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutDiscards", IfOutDiscards, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.OutDiscards ", "out of range, value is ", IfOutDiscards, "Limit is ", discardlimit)
+									log.Println("IfOutDiscards This Time: ", ifStat.IfOutDiscards)
+									log.Println("IfOutDiscards Last Time: ", lastifStat.IfOutDiscards)
+								}
+							}
+						}
+					}
 				}
 
 				if ignoreErrors == false {
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InErrors", ifStat.IfInErrors, ifNameTag, ifIndexTag))
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutErrors", ifStat.IfOutErrors, ifNameTag, ifIndexTag))
+					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+						for _, lastifStat := range *lastIfStatList {
+							if ifStat.IfIndex == lastifStat.IfIndex {
+								interval := ifStat.TS - lastifStat.TS
+								errorlimit := g.Config().Switch.ErrorsPktlimit
+								IfInErrors := float64(ifStat.IfInErrors-lastifStat.IfInErrors) / float64(interval)
+								IfOutErrors := float64(ifStat.IfOutErrors-lastifStat.IfOutErrors) / float64(interval)
+								if IfInErrors >= 0 && IfInErrors <= errorlimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.InErrors", IfInErrors, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.InErrors ", "out of range, value is ", IfInErrors, "Limit is ", errorlimit)
+									log.Println("IfInErrors This Time: ", ifStat.IfInErrors)
+									log.Println("IfInErrors Last Time: ", lastifStat.IfInErrors)
+								}
+								if IfOutErrors >= 0 && IfOutErrors <= errorlimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutErrors", IfOutErrors, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.OutErrors ", "out of range, value is ", IfOutErrors, "Limit is ", errorlimit)
+									log.Println("IfOutErrors This Time: ", ifStat.IfOutErrors)
+									log.Println("IfOutErrors Last Time: ", lastifStat.IfOutErrors)
+								}
+							}
+						}
+					}
 				}
 
 				if ignoreUnknownProtos == false {
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InUnknownProtos", ifStat.IfInUnknownProtos, ifNameTag, ifIndexTag))
+					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+						for _, lastifStat := range *lastIfStatList {
+							if ifStat.IfIndex == lastifStat.IfIndex {
+								interval := ifStat.TS - lastifStat.TS
+								unknownProtoslimit := g.Config().Switch.UnknownProtosPktlimit
+								IfInUnknownProtos := float64(ifStat.IfInUnknownProtos-lastifStat.IfInUnknownProtos) / float64(interval)
+								if IfInUnknownProtos >= 0 && IfInUnknownProtos <= unknownProtoslimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.InUnknownProtos", IfInUnknownProtos, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.InUnknownProtos ", "out of range, value is ", IfInUnknownProtos, "Limit is ", unknownProtoslimit)
+									log.Println("IfOutQLen This Time: ", ifStat.IfInUnknownProtos)
+									log.Println("IfOutQLen Last Time: ", lastifStat.IfInUnknownProtos)
+								}
+							}
+						}
+					}
 				}
 
 				if ignoreOutQLen == false {
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutQLen", ifStat.IfOutQLen, ifNameTag, ifIndexTag))
+					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+						for _, lastifStat := range *lastIfStatList {
+							if ifStat.IfIndex == lastifStat.IfIndex {
+								interval := ifStat.TS - lastifStat.TS
+								outQlenlimit := g.Config().Switch.OutQLenPktlimit
+								IfOutQLen := float64(ifStat.IfOutQLen-lastifStat.IfOutQLen) / float64(interval)
+								if IfOutQLen >= 0 && IfOutQLen <= outQlenlimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutQLen", IfOutQLen, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.OutQLen ", "out of range, value is ", IfOutQLen, "Limit is ", outQlenlimit)
+									log.Println("IfOutQLen This Time: ", ifStat.IfOutQLen)
+									log.Println("IfOutQLen Last Time: ", lastifStat.IfOutQLen)
+								}
+							}
+						}
+					}
 				}
 
-				if displayByBit == true {
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.In", 8*ifStat.IfHCInOctets, ifNameTag, ifIndexTag))
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.Out", 8*ifStat.IfHCOutOctets, ifNameTag, ifIndexTag))
-				} else {
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.In", ifStat.IfHCInOctets, ifNameTag, ifIndexTag))
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.Out", ifStat.IfHCOutOctets, ifNameTag, ifIndexTag))
-
-				}
 				//如果IgnorePkt为false，采集Pkt
 				if ignorePkt == false {
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.InPkts", ifStat.IfHCInUcastPkts, ifNameTag, ifIndexTag))
-					L = append(L, CounterValueIp(ifStat.TS, ip, "switch.if.OutPkts", ifStat.IfHCOutUcastPkts, ifNameTag, ifIndexTag))
+					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+						for _, lastifStat := range *lastIfStatList {
+							if ifStat.IfIndex == lastifStat.IfIndex {
+								interval := ifStat.TS - lastifStat.TS
+								pktlimit := g.Config().Switch.Pktlimit
+								IfHCInUcastPkts := float64(ifStat.IfHCInUcastPkts-lastifStat.IfHCInUcastPkts) / float64(interval)
+								IfHCOutUcastPkts := float64(ifStat.IfHCOutUcastPkts-lastifStat.IfHCOutUcastPkts) / float64(interval)
+								if IfHCInUcastPkts >= 0 && IfHCInUcastPkts <= pktlimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.InPkts", IfHCInUcastPkts, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.InPkts ", "out of range, value is ", IfHCInUcastPkts, "Limit is ", pktlimit)
+									log.Println("IfHCInUcastPkts This Time: ", ifStat.IfHCInUcastPkts)
+									log.Println("IfHCInUcastPkts Last Time: ", lastifStat.IfHCInUcastPkts)
+								}
+								if IfHCOutUcastPkts >= 0 && IfHCOutUcastPkts <= pktlimit {
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutPkts", IfHCOutUcastPkts, ifNameTag, ifIndexTag))
+								} else {
+									log.Println(ip, ifNameTag, "switch.if.OutPkts ", "out of range, value is ", IfHCOutUcastPkts, "Limit is ", pktlimit)
+									log.Println("IfHCOutUcastPkts This Time: ", ifStat.IfHCOutUcastPkts)
+									log.Println("IfHCOutUcastPkts Last Time: ", lastifStat.IfHCOutUcastPkts)
+								}
+							}
+						}
+					}
 				}
-
+				if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+					for _, lastifStat := range *lastIfStatList {
+						if ifStat.IfIndex == lastifStat.IfIndex {
+							interval := ifStat.TS - lastifStat.TS
+							speedlimit := g.Config().Switch.Speedlimit
+							if speedlimit == 0 {
+								speedlimit = float64(ifStat.IfSpeed)
+							}
+							IfHCInOctets := 8 * float64(ifStat.IfHCInOctets-lastifStat.IfHCInOctets) / float64(interval)
+							IfHCOutOctets := 8 * float64(ifStat.IfHCOutOctets-lastifStat.IfHCOutOctets) / float64(interval)
+							if IfHCInOctets >= 0 && IfHCInOctets <= speedlimit {
+								InSpeedPercent := IfHCInOctets / float64(ifStat.IfSpeed)
+								L = append(L, GaugeValueIp(ts, ip, "switch.if.In", IfHCInOctets, ifNameTag, ifIndexTag))
+								L = append(L, GaugeValueIp(ts, ip, "switch.if.InSpeedPercent", InSpeedPercent, ifNameTag, ifIndexTag))
+							} else {
+								log.Println(ip, ifNameTag, "switch.if.In ", "out of range, value is ", IfHCInOctets, "Limit is ", speedlimit)
+								log.Println("IfHCInOctets This Time: ", ifStat.IfHCInOctets)
+								log.Println("IfHCInOctets Last Time: ", lastifStat.IfHCInOctets)
+							}
+							if IfHCOutOctets >= 0 && IfHCOutOctets <= speedlimit {
+								OutSpeedPercent := IfHCOutOctets / float64(ifStat.IfSpeed)
+								L = append(L, GaugeValueIp(ts, ip, "switch.if.Out", IfHCOutOctets, ifNameTag, ifIndexTag))
+								L = append(L, GaugeValueIp(ts, ip, "switch.if.OutSpeedPercent", OutSpeedPercent, ifNameTag, ifIndexTag))
+							} else {
+								log.Println(ip, ifNameTag, "switch.if.Out ", "out of range, value is ", IfHCOutOctets, "Limit is ", speedlimit)
+								log.Println("IfHCOutOctets This Time: ", ifStat.IfHCOutOctets)
+								log.Println("IfHCOutOctets Last Time: ", lastifStat.IfHCOutOctets)
+							}
+						}
+					}
+				}
 			}
 		}
+		lastIfStat[chIfStat.Ip] = chIfStat.IfStatsList
 	}
 
 	endTime := time.Now()
