@@ -331,8 +331,8 @@ func swIfMetrics() (L []*model.MetricValue) {
 					}
 				}
 			}
+			lastIfStat[chIfStat.Ip] = chIfStat.IfStatsList
 		}
-		lastIfStat[chIfStat.Ip] = chIfStat.IfStatsList
 	}
 
 	endTime := time.Now()

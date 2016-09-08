@@ -14,8 +14,9 @@ import (
 // 3.2.1.1 debugmetric support multi endpoints and metrics
 // 3.2.1.2 gosnmp use getnext to walk snmp
 // 4.0.0 caculate counter type on swcollect local,add speedpercent
+// 4.0.1 fix sometimes ifstat pannic
 
 const (
-	VERSION          = "4.0.0"
+	VERSION          = "4.0.1"
 	COLLECT_INTERVAL = time.Second
 )
