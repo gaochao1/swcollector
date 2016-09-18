@@ -133,16 +133,16 @@ func swIfMetrics() (L []*model.MetricValue) {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
 								broadcastlimit := g.Config().Switch.BroadcastPktlimit
-								IfHCInBroadcastPkts := float64(ifStat.IfHCInBroadcastPkts-lastifStat.IfHCInBroadcastPkts) / float64(interval)
-								IfHCOutBroadcastPkts := float64(ifStat.IfHCOutBroadcastPkts-lastifStat.IfHCOutBroadcastPkts) / float64(interval)
-								if IfHCInBroadcastPkts >= 0 && IfHCInBroadcastPkts <= broadcastlimit {
+								IfHCInBroadcastPkts := (float64(ifStat.IfHCInBroadcastPkts) - float64(lastifStat.IfHCInBroadcastPkts)) / float64(interval)
+								IfHCOutBroadcastPkts := (float64(ifStat.IfHCOutBroadcastPkts) - float64(lastifStat.IfHCOutBroadcastPkts)) / float64(interval)
+								if limitCheck(IfHCInBroadcastPkts, broadcastlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.InBroadcastPkt", IfHCInBroadcastPkts, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.InBroadcastPkt ", "out of range, value is ", IfHCInBroadcastPkts, "Limit is ", broadcastlimit)
 									log.Println("IfHCInBroadcastPkts This Time: ", ifStat.IfHCInBroadcastPkts)
 									log.Println("IfHCInBroadcastPkts Last Time: ", lastifStat.IfHCInBroadcastPkts)
 								}
-								if IfHCOutBroadcastPkts >= 0 && IfHCOutBroadcastPkts <= broadcastlimit {
+								if limitCheck(IfHCOutBroadcastPkts, broadcastlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutBroadcastPkt", IfHCOutBroadcastPkts, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.OutBroadcastPkt ", "out of range, value is ", IfHCOutBroadcastPkts, "Limit is ", broadcastlimit)
@@ -159,16 +159,16 @@ func swIfMetrics() (L []*model.MetricValue) {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
 								multicastlimit := g.Config().Switch.MulticastPktlimit
-								IfHCInMulticastPkts := float64(ifStat.IfHCInMulticastPkts-lastifStat.IfHCInMulticastPkts) / float64(interval)
-								IfHCOutMulticastPkts := float64(ifStat.IfHCOutMulticastPkts-lastifStat.IfHCOutMulticastPkts) / float64(interval)
-								if IfHCInMulticastPkts >= 0 && IfHCInMulticastPkts <= multicastlimit {
+								IfHCInMulticastPkts := (float64(ifStat.IfHCInMulticastPkts) - float64(lastifStat.IfHCInMulticastPkts)) / float64(interval)
+								IfHCOutMulticastPkts := (float64(ifStat.IfHCOutMulticastPkts) - float64(lastifStat.IfHCOutMulticastPkts)) / float64(interval)
+								if limitCheck(IfHCInMulticastPkts, multicastlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.InMulticastPkt", IfHCInMulticastPkts, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.InMulticastPkt ", "out of range, value is ", IfHCInMulticastPkts, "Limit is ", multicastlimit)
 									log.Println("IfHCInMulticastPkts This Time: ", ifStat.IfHCInMulticastPkts)
 									log.Println("IfHCInMulticastPkts Last Time: ", lastifStat.IfHCInMulticastPkts)
 								}
-								if IfHCOutMulticastPkts >= 0 && IfHCOutMulticastPkts <= multicastlimit {
+								if limitCheck(IfHCOutMulticastPkts, multicastlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutMulticastPkt", IfHCOutMulticastPkts, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.OutMulticastPkt ", "out of range, value is ", IfHCOutMulticastPkts, "Limit is ", multicastlimit)
@@ -186,16 +186,16 @@ func swIfMetrics() (L []*model.MetricValue) {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
 								discardlimit := g.Config().Switch.DiscardsPktlimit
-								IfInDiscards := float64(ifStat.IfInDiscards-lastifStat.IfInDiscards) / float64(interval)
-								IfOutDiscards := float64(ifStat.IfOutDiscards-lastifStat.IfOutDiscards) / float64(interval)
-								if IfInDiscards >= 0 && IfInDiscards <= discardlimit {
+								IfInDiscards := (float64(ifStat.IfInDiscards) - float64(lastifStat.IfInDiscards)) / float64(interval)
+								IfOutDiscards := (float64(ifStat.IfOutDiscards) - float64(lastifStat.IfOutDiscards)) / float64(interval)
+								if limitCheck(IfInDiscards, discardlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.InDiscards", IfInDiscards, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.InDiscards ", "out of range, value is ", IfInDiscards, "Limit is ", discardlimit)
 									log.Println("IfInDiscards This Time: ", ifStat.IfInDiscards)
 									log.Println("IfInDiscards Last Time: ", lastifStat.IfInDiscards)
 								}
-								if IfOutDiscards >= 0 && IfOutDiscards <= discardlimit {
+								if limitCheck(IfOutDiscards, discardlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutDiscards", IfOutDiscards, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.OutDiscards ", "out of range, value is ", IfOutDiscards, "Limit is ", discardlimit)
@@ -213,16 +213,16 @@ func swIfMetrics() (L []*model.MetricValue) {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
 								errorlimit := g.Config().Switch.ErrorsPktlimit
-								IfInErrors := float64(ifStat.IfInErrors-lastifStat.IfInErrors) / float64(interval)
-								IfOutErrors := float64(ifStat.IfOutErrors-lastifStat.IfOutErrors) / float64(interval)
-								if IfInErrors >= 0 && IfInErrors <= errorlimit {
+								IfInErrors := (float64(ifStat.IfInErrors) - float64(lastifStat.IfInErrors)) / float64(interval)
+								IfOutErrors := (float64(ifStat.IfOutErrors) - float64(lastifStat.IfOutErrors)) / float64(interval)
+								if limitCheck(IfInErrors, errorlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.InErrors", IfInErrors, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.InErrors ", "out of range, value is ", IfInErrors, "Limit is ", errorlimit)
 									log.Println("IfInErrors This Time: ", ifStat.IfInErrors)
 									log.Println("IfInErrors Last Time: ", lastifStat.IfInErrors)
 								}
-								if IfOutErrors >= 0 && IfOutErrors <= errorlimit {
+								if limitCheck(IfOutErrors, errorlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutErrors", IfOutErrors, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.OutErrors ", "out of range, value is ", IfOutErrors, "Limit is ", errorlimit)
@@ -240,8 +240,8 @@ func swIfMetrics() (L []*model.MetricValue) {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
 								unknownProtoslimit := g.Config().Switch.UnknownProtosPktlimit
-								IfInUnknownProtos := float64(ifStat.IfInUnknownProtos-lastifStat.IfInUnknownProtos) / float64(interval)
-								if IfInUnknownProtos >= 0 && IfInUnknownProtos <= unknownProtoslimit {
+								IfInUnknownProtos := (float64(ifStat.IfInUnknownProtos) - float64(lastifStat.IfInUnknownProtos)) / float64(interval)
+								if limitCheck(IfInUnknownProtos, unknownProtoslimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.InUnknownProtos", IfInUnknownProtos, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.InUnknownProtos ", "out of range, value is ", IfInUnknownProtos, "Limit is ", unknownProtoslimit)
@@ -259,8 +259,8 @@ func swIfMetrics() (L []*model.MetricValue) {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
 								outQlenlimit := g.Config().Switch.OutQLenPktlimit
-								IfOutQLen := float64(ifStat.IfOutQLen-lastifStat.IfOutQLen) / float64(interval)
-								if IfOutQLen >= 0 && IfOutQLen <= outQlenlimit {
+								IfOutQLen := (float64(ifStat.IfOutQLen) - float64(lastifStat.IfOutQLen)) / float64(interval)
+								if limitCheck(IfOutQLen, outQlenlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutQLen", IfOutQLen, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.OutQLen ", "out of range, value is ", IfOutQLen, "Limit is ", outQlenlimit)
@@ -279,16 +279,16 @@ func swIfMetrics() (L []*model.MetricValue) {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
 								pktlimit := g.Config().Switch.Pktlimit
-								IfHCInUcastPkts := float64(ifStat.IfHCInUcastPkts-lastifStat.IfHCInUcastPkts) / float64(interval)
-								IfHCOutUcastPkts := float64(ifStat.IfHCOutUcastPkts-lastifStat.IfHCOutUcastPkts) / float64(interval)
-								if IfHCInUcastPkts >= 0 && IfHCInUcastPkts <= pktlimit {
+								IfHCInUcastPkts := (float64(ifStat.IfHCInUcastPkts) - float64(lastifStat.IfHCInUcastPkts)) / float64(interval)
+								IfHCOutUcastPkts := (float64(ifStat.IfHCOutUcastPkts) - float64(lastifStat.IfHCOutUcastPkts)) / float64(interval)
+								if limitCheck(IfHCInUcastPkts, pktlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.InPkts", IfHCInUcastPkts, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.InPkts ", "out of range, value is ", IfHCInUcastPkts, "Limit is ", pktlimit)
 									log.Println("IfHCInUcastPkts This Time: ", ifStat.IfHCInUcastPkts)
 									log.Println("IfHCInUcastPkts Last Time: ", lastifStat.IfHCInUcastPkts)
 								}
-								if IfHCOutUcastPkts >= 0 && IfHCOutUcastPkts <= pktlimit {
+								if limitCheck(IfHCOutUcastPkts, pktlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutPkts", IfHCOutUcastPkts, ifNameTag, ifIndexTag))
 								} else {
 									log.Println(ip, ifNameTag, "switch.if.OutPkts ", "out of range, value is ", IfHCOutUcastPkts, "Limit is ", pktlimit)
@@ -307,23 +307,27 @@ func swIfMetrics() (L []*model.MetricValue) {
 							if speedlimit == 0 {
 								speedlimit = float64(ifStat.IfSpeed)
 							}
-							IfHCInOctets := 8 * float64(ifStat.IfHCInOctets-lastifStat.IfHCInOctets) / float64(interval)
-							IfHCOutOctets := 8 * float64(ifStat.IfHCOutOctets-lastifStat.IfHCOutOctets) / float64(interval)
-							if IfHCInOctets >= 0 && IfHCInOctets <= speedlimit {
-								InSpeedPercent := IfHCInOctets / float64(ifStat.IfSpeed)
+							IfHCInOctets := 8 * (float64(ifStat.IfHCInOctets) - float64(lastifStat.IfHCInOctets)) / float64(interval)
+							IfHCOutOctets := 8 * (float64(ifStat.IfHCOutOctets) - float64(lastifStat.IfHCOutOctets)) / float64(interval)
+							if limitCheck(IfHCInOctets, speedlimit) {
 								L = append(L, GaugeValueIp(ts, ip, "switch.if.In", IfHCInOctets, ifNameTag, ifIndexTag))
-								L = append(L, GaugeValueIp(ts, ip, "switch.if.InSpeedPercent", InSpeedPercent, ifNameTag, ifIndexTag))
+								if speedlimit > 0 {
+									InSpeedPercent := 100 * IfHCInOctets / float64(ifStat.IfSpeed)
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.InSpeedPercent", InSpeedPercent, ifNameTag, ifIndexTag))
+								}
 							} else {
-								log.Println(ip, ifNameTag, "switch.if.In ", "out of range, value is ", IfHCInOctets, "Limit is ", speedlimit)
+								log.Println(ip, ifNameTag, "switch.if.In ", "out of range, value is ", IfHCInOctets)
 								log.Println("IfHCInOctets This Time: ", ifStat.IfHCInOctets)
 								log.Println("IfHCInOctets Last Time: ", lastifStat.IfHCInOctets)
 							}
-							if IfHCOutOctets >= 0 && IfHCOutOctets <= speedlimit {
-								OutSpeedPercent := IfHCOutOctets / float64(ifStat.IfSpeed)
+							if limitCheck(IfHCOutOctets, speedlimit) {
 								L = append(L, GaugeValueIp(ts, ip, "switch.if.Out", IfHCOutOctets, ifNameTag, ifIndexTag))
-								L = append(L, GaugeValueIp(ts, ip, "switch.if.OutSpeedPercent", OutSpeedPercent, ifNameTag, ifIndexTag))
+								if speedlimit > 0 {
+									OutSpeedPercent := 100 * IfHCOutOctets / float64(ifStat.IfSpeed)
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutSpeedPercent", OutSpeedPercent, ifNameTag, ifIndexTag))
+								}
 							} else {
-								log.Println(ip, ifNameTag, "switch.if.Out ", "out of range, value is ", IfHCOutOctets, "Limit is ", speedlimit)
+								log.Println(ip, ifNameTag, "switch.if.Out ", "out of range, value is ", IfHCOutOctets)
 								log.Println("IfHCOutOctets This Time: ", ifStat.IfHCOutOctets)
 								log.Println("IfHCOutOctets Last Time: ", lastifStat.IfHCOutOctets)
 							}
@@ -356,6 +360,18 @@ func pingCheck(ip string) bool {
 		}
 	}
 	return pingResult
+}
+
+func limitCheck(value float64, limit float64) bool {
+	if value < 0 {
+		return false
+	}
+	if limit > 0 {
+		if value > limit {
+			return false
+		}
+	}
+	return true
 }
 
 func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {

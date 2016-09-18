@@ -43,6 +43,7 @@ func connMetrics(ip string, ch chan SwConn) {
 	ConnectionStat, err := sw.ConnectionStat(ip, g.Config().Switch.Community, g.Config().Switch.SnmpTimeout, g.Config().Switch.SnmpRetry)
 	if err != nil {
 		log.Println(err)
+		ch <- swConn
 		return
 	}
 
