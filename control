@@ -10,19 +10,20 @@ app=octopux-$module
 conf=cfg.json
 pidfile=var/app.pid
 logfile=var/app.log
+supconf=$app.conf
 
 function check_pid() {
-        running=`ps -C falcon-swcollec |grep -v "PID TTY"  |wc -l`
-        return $running
+	running=`ps -C $app|grep -v "PID TTY"  |wc -l`
+	return $running
 }
 
 function configlocal(){
-        if ! [ -f /etc/supervisor/conf.d/falcon-swcollector.conf ];then
-                echo "Config file supervisord doesn't exist, creating one."
-                cp falcon-swcollector.conf /etc/supervisor/conf.d/falcon-swcollector.conf
-                supervisorctl reread
+	if ! [ -f /etc/supervisor/conf.d/$supconf ];then
+		echo "Config file supervisord doesn't exist, creating one."
+		cp $supconf /etc/supervisor/conf.d/
+		supervisorctl reread
 		supervisorctl update
-        fi
+	fi
 }
 
 function run() {
@@ -30,7 +31,7 @@ function run() {
     running=$?
     if [ $running -gt 0 ];then
         echo -n "$app now is running already, pid="
-        ps -C falcon-swcollec |grep -v "PID TTY" | awk '{print $1}'
+        ps -C $app |grep -v "PID TTY" | awk '{print $1}'
         stop
     	sleep 1
     fi
@@ -46,8 +47,7 @@ function start() {
     check_pid
     running=$?
     if [ $running -gt 0 ];then
-        echo -n "$app now is running already, pid="
-        ps -C falcon-swcollec |grep -v "PID TTY" | awk '{print $1}'
+        echo -n "$app now is running already, pid=" $running
         return 1
     fi
 
@@ -61,8 +61,7 @@ function start() {
 }
 
 function stop() {
-    pid=`ps -C falcon-swcollec |grep -v "PID TTY" | awk '{print $1}'`
-    kill $(pidof falcon-swcollector)
+    kill $(pidof $app)
     echo "$app stoped..."
 }
 
@@ -77,7 +76,7 @@ function status() {
     running=$?
     if [ $running -gt 0 ];then
         echo -n "$app running, pid="
-        ps -C falcon-swcollec |grep -v "PID TTY" | awk '{print $1}'
+        ps -C $app |grep -v "PID TTY" | awk '{print $1}'
     else
         echo "$app stoped"
     fi
@@ -99,7 +98,7 @@ function pack() {
     build
     git log -1 --pretty=%h > gitversion
     version=`./$app -v`
-    file_list="control cfg.example.json falcon-swcollector.conf perfcounter.json $app"
+    file_list="control cfg.example.json $supconf perfcounter.json $app"
     echo "...tar $app-$version.tar.gz <= $file_list"
     tar zcf $app-$version.tar.gz gitversion $file_list
 }
