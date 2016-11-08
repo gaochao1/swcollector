@@ -1,12 +1,14 @@
 package g
 
 import (
-	"github.com/toolkits/net"
+	"errors"
 	"log"
 	"math"
 	"net/rpc"
 	"sync"
 	"time"
+
+	"github.com/toolkits/net"
 )
 
 type SingleConnRpcClient struct {
@@ -23,9 +25,9 @@ func (this *SingleConnRpcClient) close() {
 	}
 }
 
-func (this *SingleConnRpcClient) insureConn() {
+func (this *SingleConnRpcClient) insureConn() error {
 	if this.rpcClient != nil {
-		return
+		return nil
 	}
 
 	var err error
@@ -33,23 +35,22 @@ func (this *SingleConnRpcClient) insureConn() {
 
 	for {
 		if this.rpcClient != nil {
-			return
+			return nil
 		}
 
 		this.rpcClient, err = net.JsonRpcClient("tcp", this.RpcServer, this.Timeout)
 		if err == nil {
-			return
+			return nil
 		}
 
 		log.Printf("dial %s fail: %v", this.RpcServer, err)
 
-		if retry > 6 {
-			retry = 1
+		if retry > 4 {
+			return err
 		}
-
+		retry++
 		time.Sleep(time.Duration(math.Pow(2.0, float64(retry))) * time.Second)
 
-		retry++
 	}
 }
 
@@ -58,7 +59,10 @@ func (this *SingleConnRpcClient) Call(method string, args interface{}, reply int
 	this.Lock()
 	defer this.Unlock()
 
-	this.insureConn()
+	err := this.insureConn()
+	if err != nil {
+		return errors.New("Rpc dial error :" + err.Error())
+	}
 
 	timeout := time.Duration(50 * time.Second)
 	done := make(chan error)

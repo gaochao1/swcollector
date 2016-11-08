@@ -33,7 +33,8 @@ func CounterValue(metric string, val interface{}, tags ...string) *model.MetricV
 
 func NewMetricValueIp(TS int64, ip, metric string, val interface{}, dataType string, tags ...string) *model.MetricValue {
 	sec := int64(g.Config().Transfer.Interval)
-
+	hostname, _ := g.Hostname()
+	collectstr := "collecter=" + hostname
 	mv := model.MetricValue{
 		Metric:    metric,
 		Value:     val,
@@ -46,7 +47,10 @@ func NewMetricValueIp(TS int64, ip, metric string, val interface{}, dataType str
 	size := len(tags)
 
 	if size > 0 {
+		tags = append(tags, collectstr)
 		mv.Tags = strings.Join(tags, ",")
+	} else {
+		mv.Tags = collectstr
 	}
 
 	return &mv

@@ -26,7 +26,8 @@ func CpuMetrics() (L []*model.MetricValue) {
 
 	for _, ch := range chs {
 		swCpu := <-ch
-		L = append(L, GaugeValueIp(time.Now().Unix(), swCpu.Ip, "switch.CpuUtilization", swCpu.CpuUtil))
+		ipTag := "ip=" + swCpu.Ip
+		L = append(L, GaugeValueIp(time.Now().Unix(), swCpu.Ip, "switch.CpuUtilization", swCpu.CpuUtil, ipTag))
 	}
 
 	return L

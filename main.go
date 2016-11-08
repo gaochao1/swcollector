@@ -5,11 +5,18 @@ import (
 	"fmt"
 	"os"
 
+	_ "github.com/baishancloud/goperfcounter"
 	"github.com/baishancloud/octopux-swcollector/cron"
 	"github.com/baishancloud/octopux-swcollector/funcs"
 	"github.com/baishancloud/octopux-swcollector/g"
 	"github.com/baishancloud/octopux-swcollector/http"
+	"github.com/getsentry/raven-go"
 )
+
+func init() {
+	//raven.SetDSN("")
+	raven.SetDSN("testdsn")
+}
 
 func main() {
 
@@ -26,8 +33,10 @@ func main() {
 
 	g.ParseConfig(*cfg)
 
+	g.GetHost()
 	g.InitRootDir()
 	g.InitLocalIps()
+	g.InitFaceIp()
 	g.InitRpcClients()
 
 	if *check {

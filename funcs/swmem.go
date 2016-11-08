@@ -26,7 +26,8 @@ func MemMetrics() (L []*model.MetricValue) {
 
 	for _, ch := range chs {
 		swMem := <-ch
-		L = append(L, GaugeValueIp(time.Now().Unix(), swMem.Ip, "switch.MemUtilization", swMem.MemUtili))
+		ipTag := "ip=" + swMem.Ip
+		L = append(L, GaugeValueIp(time.Now().Unix(), swMem.Ip, "switch.MemUtilization", swMem.MemUtili, ipTag))
 	}
 
 	return L

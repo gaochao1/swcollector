@@ -53,13 +53,14 @@ type CollectorConfig struct {
 
 type GlobalConfig struct {
 	Debug         bool             `json:"debug"`
+	Rate          bool             `json:"rate"`
 	IP            string           `json:"ip"`
 	Hostname      string           `json:"hostname"`
 	Switch        *SwitchConfig    `json:"switch"`
 	Heartbeat     *HeartbeatConfig `json:"heartbeat"`
 	Transfer      *TransferConfig  `json:"transfer"`
-	Collector     *CollectorConfig `json:"collector"`
 	Http          *HttpConfig      `json:"http"`
+	Collector     *CollectorConfig `json:"collector"`
 	IgnoreMetrics map[string]bool  `json:"ignore"`
 }
 
@@ -95,11 +96,21 @@ func IP() string {
 		return ip
 	}
 
-	if len(LocalIps) > 0 {
-		ip = LocalIps[0]
+	if len(LocalInterNetIps) > 0 {
+		ip = LocalInterNetIps[0]
 	}
 
 	return ip
+}
+
+func ConfigIp() (string, bool) {
+	ip := Config().IP
+	if ip != "" {
+		// use ip in configuration
+		return ip, true
+	} else {
+		return "", false
+	}
 }
 
 func ParseConfig(cfg string) {

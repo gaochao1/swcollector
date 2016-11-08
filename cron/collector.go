@@ -5,8 +5,9 @@ import (
 	"math"
 	"time"
 
+	pfc "github.com/baishancloud/goperfcounter"
 	"github.com/baishancloud/octopux-swcollector/funcs"
-	"github.com/baishancloud/octopux-swcollector/funcs/ifstat"
+	"github.com/baishancloud/octopux-swcollector/funcs/lansw"
 	"github.com/baishancloud/octopux-swcollector/g"
 	"github.com/open-falcon/common/model"
 )
@@ -19,7 +20,7 @@ func Collect() {
 	if g.Config().Transfer.Addr == "" {
 		return
 	}
-	go ifstat.StartIfStatsCollector()
+	go lansw.StartLanSWCollector()
 	for _, v := range funcs.Mappers {
 		go collect(int64(v.Interval), v.Fs)
 	}
@@ -34,7 +35,10 @@ func collect(sec int64, fns []func() []*model.MetricValue) {
 
 func MetricToTransfer(sec int64, fns []func() []*model.MetricValue) {
 	mvs := []*model.MetricValue{}
-
+	ignoreMetrics := g.Config().IgnoreMetrics
+	sec1 := int64(g.Config().Transfer.Interval)
+	hostname, _ := g.Hostname()
+	now := time.Now().Unix()
 	for _, fn := range fns {
 		items := fn()
 		if items == nil {
@@ -46,12 +50,21 @@ func MetricToTransfer(sec int64, fns []func() []*model.MetricValue) {
 		}
 
 		for _, mv := range items {
-			mvs = append(mvs, mv)
+			if b, ok := ignoreMetrics[mv.Metric]; ok && b {
+				continue
+			} else {
+				if mv.Step == 0 {
+					mv.Step = sec1
+					mv.Endpoint = hostname
+					mv.Timestamp = now
+				}
+				mvs = append(mvs, mv)
+			}
 		}
 	}
 
 	startTime := time.Now()
-
+	pfc.Meter("SWCLtfSend", int64(len(mvs)))
 	//分批次传给transfer
 	n := 5000
 	lenMvs := len(mvs)

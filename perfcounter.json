@@ -1,0 +1,17 @@
+{
+    "debug": false,
+    "hostname": "",
+    "tags": "cop=bsy,owt=flow,pdl=octopux,module=swcollector",
+    "step": 300,
+    "bases": [],
+    "push": {
+        "enabled": true,
+        "clear": true,
+        "api": "http://127.0.0.1:10699/v1/push"
+    },
+    "http": {
+        "enabled": false,
+        "listen": "0.0.0.0:2015"
+    }
+}
+

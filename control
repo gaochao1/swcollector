@@ -17,15 +17,11 @@ function check_pid() {
 }
 
 function configlocal(){
-        if [ ! -n "`grep 'setswcollector' /var/spool/cron/root`" ] ; then
-                min=`expr  $RANDOM % 30`
-                max=`expr $min + 30 `
-                /bin/echo "$min,$max * * * * ${WORKSPACE}/setswcollectorlocal.sh " >> /var/spool/cron/root
-        fi
         if ! [ -f /etc/supervisor/conf.d/falcon-swcollector.conf ];then
                 echo "Config file supervisord doesn't exist, creating one."
                 cp falcon-swcollector.conf /etc/supervisor/conf.d/falcon-swcollector.conf
-                service  supervisord restart
+                supervisorctl reread
+		supervisorctl update
         fi
 }
 
@@ -43,7 +39,7 @@ function run() {
         echo "Config file $conf doesn't exist, creating one."
         cp cfg.example.json $conf
     fi
-    ./$app -c $conf &> $logfile
+    ./$app -c $conf  >>$logfile 2>&1
 }
 
 function start() {
@@ -59,7 +55,7 @@ function start() {
         echo "Config file $conf doesn't exist, creating one."
         cp cfg.example.json $conf
     fi
-    nohup ./$app -c $conf &> $logfile &
+    nohup ./$app -c $conf  >>$logfile 2>&1 &
     echo $! > $pidfile
     echo "$app started..., pid=$!"
 }
@@ -80,9 +76,10 @@ function status() {
     check_pid
     running=$?
     if [ $running -gt 0 ];then
-        echo started
+        echo -n "$app running, pid="
+        ps -C falcon-swcollec |grep -v "PID TTY" | awk '{print $1}'
     else
-        echo stoped
+        echo "$app stoped"
     fi
 }
 
@@ -91,11 +88,10 @@ function tailf() {
 }
 
 function build() {
-    go build
+    go build -o $app
     if [ $? -ne 0 ]; then
         exit $?
     fi
-    ##mv $module $app
     ./$app -v
 }
 
@@ -103,9 +99,9 @@ function pack() {
     build
     git log -1 --pretty=%h > gitversion
     version=`./$app -v`
-    file_list="public control cfg.example.json falcon-swcollector.conf  *.sh $app"
+    file_list="control cfg.example.json falcon-swcollector.conf perfcounter.json $app"
     echo "...tar $app-$version.tar.gz <= $file_list"
-    tar zcvf $app-$version.tar.gz gitversion $file_list
+    tar zcf $app-$version.tar.gz gitversion $file_list
 }
 
 function packbin() {

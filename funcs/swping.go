@@ -60,7 +60,7 @@ func pingMetrics(ip string, ch chan SwPing) {
 	var swPing SwPing
 	timeout := g.Config().Switch.PingTimeout * 4
 
-	rtt, err := sw.PingRtt(ip, timeout)
+	rtt, err := sw.PingRtt(ip, timeout, true)
 	if err != nil {
 		log.Println(ip, err)
 		swPing.Ping = 0

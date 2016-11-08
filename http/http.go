@@ -17,7 +17,6 @@ type Dto struct {
 func init() {
 	configAdminRoutes()
 	configHealthRoutes()
-	configPageRoutes()
 	configPushRoutes()
 	configRunRoutes()
 	configSwRoutes()
