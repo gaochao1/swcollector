@@ -6,6 +6,8 @@
 * 添加了采集本机网卡和iptables统计的内外网流量信息。之前我们通过snmp方式采集服务信息，小运营商存在比较多丢包情况。现在由本机的swcollector采集，采集数据上报比较完整。并且依赖软件发布机制，和swcollector主动上报无需配置服务流量采集。
 * 实际使用中存在交换机采集超时问题较为严重。修改交换机采集方式为按交换机端口独立发起采集。减少交换机采集超时问题。
 * 添加采集交换机的丢包数
+* 大网采集交换机超时，丢包问题。修改策略为同网段的客户端选举产生两台采集者，自动采集本节点交换机。解决大网采集困难，并且采集过程不再依赖配置。
+
 
 *PS*：
 
@@ -13,23 +15,41 @@
 本机内外网采集依赖iptables统计功能。下面是我们的配置脚本片段：
 
 ```
-dev=$(route -n|egrep ^0.0.0.0|egrep -o "[a-z0-9.]+$"|sed 1p -n)
-net=`ifconfig $dev|fgrep Bcast|awk '{print $2}'|cut -d: -f2|sed -r 's@[0-9]+$@0/24@'|sed 1p -n`
+function chan()
+{
+	num1=`echo "$1" |awk -F. '{print $1}'`
+        num2=`echo "$1" |awk -F. '{print $2}'`
+        num3=`echo "$1" |awk -F. '{print $3}'`
+        num4=`echo "$1" |awk -F. '{print $4}'`
+        printf "%x.%x.%x.%x" "$num1" "$num2" "$num3" "$num4"
+}
 
-iptables -N traffic_in_$dev
-iptables -N traffic_out_$dev
-iptables -N traffic_lan_in_$dev
-iptables -N traffic_lan_out_$dev
+ip_all=(`ip addr show | grep "inet\>"|grep "127.0.0.1" -v | grep "secondary" -v | grep "brd"| grep " 172.1" -v| awk '{print $2}'| awk -F/ '{print $1}'`)
+dev_all=(`ip addr show | grep "inet\>"|grep "127.0.0.1" -v | grep "secondary" -v | grep "brd"| grep " 172.1" -v | awk '{print $NF}'`)
+if ! [ "$ip_all" = ""  ] ; then
+    echo "set ip_all" ;
+    for ((i=0; i<${#ip_all[@]}; ++i))
+        do
+            net=`echo "${ip_all[$i]}" |sed -r 's@[0-9]+$@0/24@'`
+	    ip_hex=`chan "${ip_all[$i]}"`
+            if ! [ "$net" = ""  ] ; then
+                iptables -N traffic_in_${ip_hex}
+                iptables -N traffic_out_${ip_hex}
+                iptables -N traffic_lan_in_${ip_hex}
+                iptables -N traffic_lan_out_${ip_hex}
 
-iptables -I INPUT -i $dev -j traffic_in_$dev
-iptables -I OUTPUT -o $dev -j traffic_out_$dev
-iptables -I INPUT -i $dev -j traffic_lan_in_$dev
-iptables -I OUTPUT -o $dev -j traffic_lan_out_$dev
+                iptables -I INPUT -i ${dev_all[$i]} -j traffic_in_${ip_hex}
+                iptables -I OUTPUT -o ${dev_all[$i]} -j traffic_out_${ip_hex}
+                iptables -I INPUT -i ${dev_all[$i]} -j traffic_lan_in_${ip_hex}
+                iptables -I OUTPUT -o ${dev_all[$i]} -j traffic_lan_out_${ip_hex}
 
-iptables -A traffic_in_$dev -i $dev
-iptables -A traffic_out_$dev -o $dev
-iptables -A traffic_lan_in_$dev -i $dev -s $net
-iptables -A traffic_lan_out_$dev -o $dev -d $net
+                iptables -A traffic_in_${ip_hex} -i ${dev_all[$i]}
+                iptables -A traffic_out_${ip_hex} -o ${dev_all[$i]}
+                iptables -A traffic_lan_in_${ip_hex} -i ${dev_all[$i]} -s ${net}
+                iptables -A traffic_lan_out_${ip_hex} -o ${dev_all[$i]} -d ${net}
+            fi
+        done
+fi
 ```
 
 
