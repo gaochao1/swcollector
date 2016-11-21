@@ -79,6 +79,7 @@ function status() {
         ps -C $app |grep -v "PID TTY" | awk '{print $1}'
     else
         echo "$app stoped"
+		exit 1
     fi
 }
 
