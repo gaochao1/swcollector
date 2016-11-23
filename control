@@ -18,12 +18,9 @@ function check_pid() {
 }
 
 function configlocal(){
-	if ! [ -f /etc/supervisor/conf.d/$supconf ];then
-		echo "Config file supervisord doesn't exist, creating one."
-		cp $supconf /etc/supervisor/conf.d/
-		supervisorctl reread
-		supervisorctl update
-	fi
+	cp ${supconf} /etc/supervisor/conf.d/${supconf}
+	supervisorctl reread
+	supervisorctl update
 }
 
 function run() {
