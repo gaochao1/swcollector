@@ -54,6 +54,7 @@ func SendToTransfer(metrics []*model.MetricValue) {
 	debug_metrics := Config().Debugmetric.Metrics
 	debug_tags := Config().Debugmetric.Tags
 	debug_Tags := strings.Split(debug_tags, ",")
+
 	if debug {
 		for _, metric := range metrics {
 			metric_tags := strings.Split(metric.Tags, ",")

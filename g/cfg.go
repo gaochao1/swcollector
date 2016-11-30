@@ -44,6 +44,7 @@ type SwitchConfig struct {
 	UnknownProtosPktlimit float64  `json:"unknownProtosPktlimit"`
 	IgnoreOutQLen         bool     `json:"ignoreOutQLen`
 	OutQLenPktlimit       float64  `json:"outQLenPktlimit"`
+	LimitCon              int      `json:limitCon`
 	LimitConcur           int      `json:"limitConcur"`
 	FastPingMode          bool     `json:"fastPingMode"`
 }

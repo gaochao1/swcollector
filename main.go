@@ -34,7 +34,7 @@ func main() {
 		funcs.CheckCollector()
 		os.Exit(0)
 	}
-
+	funcs.NewLastifMap()
 	funcs.BuildMappers()
 
 	cron.Collect()

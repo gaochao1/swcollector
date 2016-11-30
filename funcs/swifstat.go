@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"log"
+	"sync"
 
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
@@ -20,12 +21,48 @@ type ChIfStat struct {
 	IfStatsList *[]sw.IfStats
 }
 
-var (
-	AliveIp     []string
-	lastIfStat  = map[string]*[]sw.IfStats{}
-	pingTimeout int
-	pingRetry   int
+type LastifMap struct {
+	lock   *sync.RWMutex
+	ifstat map[string]*[]sw.IfStats
+}
 
+func NewLastifMap() {
+	lastifmap = &LastifMap{
+		lock:   new(sync.RWMutex),
+		ifstat: make(map[string]*[]sw.IfStats),
+	}
+}
+
+func (m *LastifMap) Get(k string) *[]sw.IfStats {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+	if val, ok := m.ifstat[k]; ok {
+		return val
+	}
+	return nil
+}
+
+func (m *LastifMap) Set(k string, v *[]sw.IfStats) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	m.ifstat[k] = v
+	return
+}
+
+func (m *LastifMap) Check(k string) bool {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+	if _, ok := m.ifstat[k]; !ok {
+		return false
+	}
+	return true
+}
+
+var (
+	AliveIp             []string
+	pingTimeout         int
+	pingRetry           int
+	lastifmap           *LastifMap
 	community           string
 	snmpTimeout         int
 	snmpRetry           int
@@ -42,6 +79,7 @@ var (
 	ignoreOutQLen       bool
 	ignoreSpeedPercent  bool
 	fastPingMode        bool
+	limitCon            int
 )
 
 func initVariable() {
@@ -52,6 +90,7 @@ func initVariable() {
 	community = g.Config().Switch.Community
 	snmpTimeout = g.Config().Switch.SnmpTimeout
 	snmpRetry = g.Config().Switch.SnmpRetry
+	limitCon = g.Config().Switch.LimitCon
 
 	gosnmp = g.Config().Switch.Gosnmp
 	ignoreIface = g.Config().Switch.IgnoreIface
@@ -128,7 +167,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 					L = append(L, GaugeValueIp(ifStat.TS, ip, "switch.if.Speed", ifStat.IfSpeed, ifNameTag, ifIndexTag))
 				}
 				if ignoreBroadcastPkt == false {
-					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+					if lastIfStatList := lastifmap.Get(chIfStat.Ip); lastIfStatList != nil {
 						for _, lastifStat := range *lastIfStatList {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
@@ -154,7 +193,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 					}
 				}
 				if ignoreMulticastPkt == false {
-					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+					if lastIfStatList := lastifmap.Get(chIfStat.Ip); lastIfStatList != nil {
 						for _, lastifStat := range *lastIfStatList {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
@@ -181,7 +220,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 				}
 
 				if ignoreDiscards == false {
-					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+					if lastIfStatList := lastifmap.Get(chIfStat.Ip); lastIfStatList != nil {
 						for _, lastifStat := range *lastIfStatList {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
@@ -208,7 +247,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 				}
 
 				if ignoreErrors == false {
-					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+					if lastIfStatList := lastifmap.Get(chIfStat.Ip); lastIfStatList != nil {
 						for _, lastifStat := range *lastIfStatList {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
@@ -235,7 +274,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 				}
 
 				if ignoreUnknownProtos == false {
-					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+					if lastIfStatList := lastifmap.Get(chIfStat.Ip); lastIfStatList != nil {
 						for _, lastifStat := range *lastIfStatList {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
@@ -254,7 +293,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 				}
 
 				if ignoreOutQLen == false {
-					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+					if lastIfStatList := lastifmap.Get(chIfStat.Ip); lastIfStatList != nil {
 						for _, lastifStat := range *lastIfStatList {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
@@ -274,7 +313,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 
 				//如果IgnorePkt为false，采集Pkt
 				if ignorePkt == false {
-					if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+					if lastIfStatList := lastifmap.Get(chIfStat.Ip); lastIfStatList != nil {
 						for _, lastifStat := range *lastIfStatList {
 							if ifStat.IfIndex == lastifStat.IfIndex {
 								interval := ifStat.TS - lastifStat.TS
@@ -299,7 +338,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 						}
 					}
 				}
-				if lastIfStatList, ok := lastIfStat[chIfStat.Ip]; ok {
+				if lastIfStatList := lastifmap.Get(chIfStat.Ip); lastIfStatList != nil {
 					for _, lastifStat := range *lastIfStatList {
 						if ifStat.IfIndex == lastifStat.IfIndex {
 							interval := ifStat.TS - lastifStat.TS
@@ -335,7 +374,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 					}
 				}
 			}
-			lastIfStat[chIfStat.Ip] = chIfStat.IfStatsList
+			lastifmap.Set(chIfStat.Ip, chIfStat.IfStatsList)
 		}
 	}
 
@@ -396,7 +435,7 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 		var err error
 
 		if gosnmp {
-			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt, ignoreDiscards, ignoreErrors, ignoreUnknownProtos, ignoreOutQLen)
+			ifList, err = sw.ListIfStats(ip, community, snmpTimeout, ignoreIface, snmpRetry, limitCon, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt, ignoreDiscards, ignoreErrors, ignoreUnknownProtos, ignoreOutQLen)
 		} else {
 			ifList, err = sw.ListIfStatsSnmpWalk(ip, community, snmpTimeout*5, ignoreIface, snmpRetry, ignorePkt, ignoreOperStatus, ignoreBroadcastPkt, ignoreMulticastPkt, ignoreDiscards, ignoreErrors, ignoreUnknownProtos, ignoreOutQLen)
 		}

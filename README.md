@@ -93,7 +93,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 	   "enabled": true,
 		"ipRange":[            #交换机IP地址段，对该网段有效IP，先发Ping包探测，对存活IP发SNMP请求
             "192.168.56.101/32",      
-            "192.168.56.102/32",
+            "192.168.56.102-192.168.56.120",#现在支持这样的配置方式，对区域内的ip进行ping探测，对存活ip发起snmp请求。
             "172.16.114.233" 
  		],
 		"gosnmp":true,         #是否使用 gosnmp 采集, false 则使用 snmpwalk
@@ -119,8 +119,9 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 		"unknownProtosPktlimit": 0,    #unknownProtosPkt的上限，如果采集计算出的包速率超过这个数值，则抛弃不上报。如果填0，则不进行最大值比较。
 		"ignoreOutQLen":true,    #不采集IfOutQLen
 		"outQLenPktlimit": 0,   #outQLenPkt的上限，如果采集计算出的包速率超过这个数值，则抛弃不上报。如果填0，则不进行最大值比较。
-		"fastPingMode": true,
-		"limitConcur": 1000
+		"fastPingMode": true,  
+		"limitConcur": 1000, #交换机采集的并发限制
+		"limitCon": 4 #对于单台交换机上，多个指标采集的并发限制
  	}, 
     "transfer": {
         "enabled": true,

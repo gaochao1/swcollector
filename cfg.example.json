@@ -1,5 +1,6 @@
 {
     "debug": true,
+	"lowermetrics": true,
 	"debugmetric":{
 		"endpoints":["192.168.56.101","192.168.56.102"],
 		"metrics":["switch.if.In","switch.if.Out"],
@@ -9,7 +10,7 @@
 	   "enabled": true,
 		"ipRange":[
             "192.168.56.101/32",      
-            "192.168.56.102/32",
+            "192.168.56.102-192.168.56.120",
             "172.16.114.233" 
  		],
 		"gosnmp":true,
@@ -36,7 +37,8 @@
 		"ignoreOutQLen":true,
 		"outQLenPktlimit": 0,
 		"fastPingMode": true,
-		"limitConcur": 1000
+		"limitConcur": 1000,
+		"limitCon": 4
  	}, 
     "transfer": {
         "enabled": true,
