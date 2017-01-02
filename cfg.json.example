@@ -2,21 +2,19 @@
     "debug": true,
 	"lowermetrics": true,
 	"debugmetric":{
-		"endpoints":["192.168.56.101","192.168.56.102"],
-		"metrics":["switch.if.In","switch.if.Out"],
-		"tags":"ifName=Fa0/1"
+		"endpoints":["vpn-lw"],
+		"metrics":["AnyconnectSession","ConnectionStat"],
+		"tags":""
 	},
 	"switch":{
 	   "enabled": true,
 		"ipRange":[
-            "192.168.56.101/32",      
-            "192.168.56.102-192.168.56.120",
-            "172.16.114.233" 
+            "10.10..88.168"      
  		],
 		"gosnmp":true,
  		"pingTimeout":300,
 		"pingRetry":4,
-		"community":"public",
+		"community":"123456",
 		"snmpTimeout":1000,
 		"snmpRetry":5,
 		"ignoreIface": ["Nu","NU","Vlan","Vl"],
@@ -40,6 +38,14 @@
 		"limitConcur": 1000,
 		"limitCon": 4
  	}, 
+	"switchhosts":{
+		"enabled":true,
+		"hosts":"./hosts.json"
+	},
+	"customMetrics":{
+		"enabled":true,
+		"template":"./custom.json"
+	},
     "transfer": {
         "enabled": true,
         "addr": "127.0.0.1:8433",

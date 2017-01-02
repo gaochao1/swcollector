@@ -123,6 +123,14 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 		"limitConcur": 1000, #交换机采集的并发限制
 		"limitCon": 4 #对于单台交换机上，多个指标采集的并发限制
  	}, 
+	"switchhosts":{
+		"enabled":true,
+		"hosts":"./hosts.json"  #自定义的host与Ip地址对应表，如果配置，则上报时会用这里的host替换ip地址
+	},
+	"customMetrics":{         
+		"enabled":true,
+		"template":"./custom.json"    #自定义的metric列表，如果配置，会根据这个配置文件，采集额外的自定义metric
+	},
     "transfer": {
         "enabled": true,
         "addr": "127.0.0.1:8433",

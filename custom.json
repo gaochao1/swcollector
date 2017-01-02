@@ -1,0 +1,17 @@
+{
+	"metrics":
+		[
+			{
+			"metric":"AnyconnectSession",
+			"tag":"",
+			"type":"GUAGE",
+			"oid":"1.3.6.1.4.1.9.9.392.1.3.35"
+			},
+			{
+			"metric":"ConnectionStat",
+			"tag":"",
+			"type":"GUAGE",
+			"oid":"1.3.6.1.4.1.9.9.147.1.2.2.2.1.5.40.6"
+			}
+		]
+}

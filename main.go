@@ -25,7 +25,14 @@ func main() {
 	}
 
 	g.ParseConfig(*cfg)
-
+	if g.Config().SwitchHosts.Enabled {
+		hostcfg := g.Config().SwitchHosts.Hosts
+		g.ParseHostConfig(hostcfg)
+	}
+	if g.Config().CustomMetrics.Enabled {
+		custMetrics := g.Config().CustomMetrics.Template
+		g.ParseCustConfig(custMetrics)
+	}
 	g.InitRootDir()
 	g.InitLocalIps()
 	g.InitRpcClients()

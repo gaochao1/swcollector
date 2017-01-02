@@ -55,6 +55,15 @@ func SendToTransfer(metrics []*model.MetricValue) {
 	debug_tags := Config().Debugmetric.Tags
 	debug_Tags := strings.Split(debug_tags, ",")
 
+	if Config().SwitchHosts.Enabled {
+		hosts := HostConfig().Hosts
+		for i, metric := range metrics {
+			if hostname, ok := hosts[metric.Endpoint]; ok {
+				metrics[i].Endpoint = hostname
+			}
+		}
+	}
+
 	if debug {
 		for _, metric := range metrics {
 			metric_tags := strings.Split(metric.Tags, ",")
@@ -69,7 +78,6 @@ func SendToTransfer(metrics []*model.MetricValue) {
 			}
 		}
 	}
-
 	var resp model.TransferResponse
 	err := TransferClient.Call("Transfer.Update", metrics, &resp)
 	if err != nil {
