@@ -1,139 +1,189 @@
 #!/bin/bash
 
-WORKSPACE=$(cd $(dirname $0)/; pwd)
+WORKSPACE=$(
+	cd $(dirname $0)/
+	pwd
+)
 cd $WORKSPACE
 
 mkdir -p var
 
-module=swcollector
+module=swcolletor2
 app=octopux-$module
 conf=cfg.json
-pidfile=var/app.pid
-logfile=var/app.log
-supconf=$app.conf
+dist=$(rpm --showrc | grep dist | grep el | awk '($2=="dist"){print $3 }' | awk -F . '{print $2}')
+logfile=/var/log/supervisor/${app}.log
+iteration=3
+progpath="usr/local/octopux/${app}/"
+file_list="public control cfg.example.json ${app} perfcounter.json"
 
 function check_pid() {
-	running=`ps -C $app|grep -v "PID TTY"  |wc -l`
+	running=$(ps -C $app | grep -v "PID TTY" | wc -l)
 	return $running
 }
 
-function configlocal(){
-	cp ${supconf} /etc/supervisor/conf.d/${supconf}
-	supervisorctl reread
-	supervisorctl update
+function supervisorconf() {
+	cat <<EOF >${app}.conf
+[program:${app}]
+command=/${progpath}${app}
+numprocs=1
+directory=/${progpath}
+autostart=true
+autorestart=true
+startsecs=1
+startretries=1000000
+exitcodes=0
+stopsignal=SIGTERM
+stopwaitsecs=300
+user=root
+redirect_stderr=true
+stdout_logfile=/var/log/supervisor/${app}.log
+stdout_logfile_maxbytes=1MB
+stdout_logfile_backups=10
+stdout_capture_maxbytes=1MB
+stdout_events_enabled=true
+stderr_logfile=/var/log/supervisor/${app}.err.log
+stderr_logfile_maxbytes=1MB
+stderr_logfile_backups=10
+stderr_capture_maxbytes=1MB
+stderr_events_enabled=true
+
+EOF
+
+
+cat << EOF > postinsl.in
+supervisorctl reread
+supervisorctl update
+EOF
+
+	echo "OK"
+	echo ""
+
 }
 
 function run() {
-    check_pid
-    running=$?
-    if [ $running -gt 0 ];then
-        echo -n "$app now is running already, pid="
-        ps -C $app |grep -v "PID TTY" | awk '{print $1}'
-        stop
-    	sleep 1
-    fi
+	check_pid
+	running=$?
+	if [ ${running} -gt 0 ]; then
+		echo -n "${app} now is running already, pid="
+		ps -C $app | grep -v "PID TTY" | awk '{print $1}'
+		stop
+		sleep 1
+	fi
 
-    if ! [ -f $conf ];then
-        echo "Config file $conf doesn't exist, creating one."
-        cp cfg.example.json $conf
-    fi
-    ./$app -c $conf  >>$logfile 2>&1
+	if ! [ -f ${conf} ]; then
+		echo "Config file $conf doesn't exist, creating one."
+		cp cfg.example.json ${conf}
+	fi
+	ulimit -HSn 65536
+	./$app -c ${conf} >>${logfile} 2>&1
 }
 
 function start() {
-    check_pid
-    running=$?
-    if [ $running -gt 0 ];then
-        echo -n "$app now is running already, pid=" $running
-        return 1
-    fi
+	check_pid
+	running=$?
+	if [ $running -gt 0 ]; then
+		echo -n "${app} now is running already, pid="
+		ps -C ${app} | grep -v "PID TTY" | awk '{print $1}'
+		return 1
+	fi
 
-    if ! [ -f $conf ];then
-        echo "Config file $conf doesn't exist, creating one."
-        cp cfg.example.json $conf
-    fi
-    nohup ./$app -c $conf  >>$logfile 2>&1 &
-    echo $! > $pidfile
-    echo "$app started..., pid=$!"
+	if ! [ -f $conf ]; then
+		echo "Config file $conf doesn't exist, creating one."
+		cp cfg.example.json $conf
+	fi
+	ulimit -HSn 65536
+	nohup ./${app} -c ${conf} >>${logfile} 2>&1 &
+	sleep 1
+	running=$(ps -C ${app} | grep -v "PID TTY" | wc -l)
+	if [ ${running} -gt 0 ]; then
+		echo "${app} started..., pid=" $(ps -C ${app} | grep -v "PID TTY" | awk '{print $1}')
+	else
+		echo "${app} failed to start."
+		return 1
+	fi
 }
 
 function stop() {
-    kill $(pidof $app)
-    echo "$app stoped..."
+	pid=$(ps -C ${app} | grep -v "PID TTY" | awk '{print $1}')
+	kill $(pidof ${app})
+	echo "${app} (${pid}) stoped..."
 }
 
 function restart() {
-    stop
-    sleep 1
-    start
+	stop
+	sleep 1
+	start
 }
 
 function status() {
-    check_pid
-    running=$?
-    if [ $running -gt 0 ];then
-        echo -n "$app running, pid="
-        ps -C $app |grep -v "PID TTY" | awk '{print $1}'
-    else
-        echo "$app stoped"
-		exit 1
-    fi
+	check_pid
+	running=$?
+	if [ $running -gt 0 ]; then
+		echo started
+	else
+		echo stoped
+	fi
 }
 
 function tailf() {
-    tail -f $logfile
+	tail -f ${logfile}
 }
 
 function build() {
-    go build -o $app
-    if [ $? -ne 0 ]; then
-        exit $?
-    fi
-    ./$app -v
+	govvv build -o ${app}
+	if [ $? -ne 0 ]; then
+		exit $?
+	fi
+
+	./$app -v
 }
 
-function pack() {
-    build
-    git log -1 --pretty=%h > gitversion
-    version=`./$app -v`
-    file_list="control cfg.example.json $supconf perfcounter.json $app"
-    echo "...tar $app-$version.tar.gz <= $file_list"
-    tar zcf $app-$version.tar.gz gitversion $file_list
-}
+function rpm() {
+	build
 
-function packbin() {
-    build
-    git log -1 --pretty=%h > gitversion
-    version=`./$app -v`
-    tar zcvf $app-bin-$version.tar.gz $app gitversion
+	if [ "$dist" == "" ]; then
+		echo "cant build rpm on this os!"
+		exit 1
+	fi
+	version=$(./${app} -v | grep Version | awk -F : '{print $2}')
+	iteration=$(./${app} -v | grep commit | awk -F : '{print $2}')
+	supervisorconf
+	mkdir -p "rpm/${progpath}"
+	mkdir -p rpm/etc/supervisor/conf.d/
+
+	cp -R ${file_list} rpm/${progpath}
+	cp cfg.example.json rpm/${progpath}cfg.json
+
+	cp ${app}.conf rpm/etc/supervisor/conf.d
+
+	fpm -s dir -t rpm -n ${app} -m dotwoo_test -v ${version} --iteration ${iteration} --rpm-dist ${dist} --after-install postinsl.in --after-upgrade postinsl.in --after-remove postinsl.in -C rpm --config-files etc/supervisor/conf.d/${app}.conf --config-files ${progpath}cfg.json -f --url http://www.baishancloud.com/ --provides dotwoo@baishancloud.com --vendor dotwoo@baishancloud.com
+
+	rm -fr rpm
 }
 
 function help() {
-    echo "$0 build|pack|start|stop|restart|status|tail|configlocal|run"
+	echo "$0 build|start|stop|restart|status|tail|run|rpm"
 }
 
 if [ "$1" == "" ]; then
-    help
-elif [ "$1" == "stop" ];then
-    stop
-elif [ "$1" == "start" ];then
-    start
-elif [ "$1" == "run" ];then
-    run
-elif [ "$1" == "configlocal" ];then
-    configlocal
-elif [ "$1" == "restart" ];then
-    restart
-elif [ "$1" == "status" ];then
-    status
-elif [ "$1" == "tail" ];then
-    tailf
-elif [ "$1" == "build" ];then
-    build
-elif [ "$1" == "pack" ];then
-    pack
-elif [ "$1" == "packbin" ];then
-    packbin
+	help
+elif [ "$1" == "stop" ]; then
+	stop
+elif [ "$1" == "start" ]; then
+	start
+elif [ "$1" == "restart" ]; then
+	restart
+elif [ "$1" == "status" ]; then
+	status
+elif [ "$1" == "tail" ]; then
+	tailf
+elif [ "$1" == "run" ]; then
+	run
+elif [ "$1" == "build" ]; then
+	build
+elif [ "$1" == "rpm" ]; then
+	rpm
 else
-    help
+	help
 fi

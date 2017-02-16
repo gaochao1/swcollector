@@ -17,8 +17,9 @@ import (
 // 4.5.22: 添加raven 异常信息收集，pfc统计
 // 4.5.23: 修复本地交换机扫描错误将linux服务器判断为交换机
 // 4.5.25: 修复网口只配置IP时，列举对应网段IP列表出错
+// 5.0.1: 采集的累进值数据可以换算成rate。
 
 const (
-	VERSION          = "4.5.25"
+	VERSION          = "5.0.1"
 	COLLECT_INTERVAL = time.Second
 )
