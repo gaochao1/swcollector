@@ -227,7 +227,6 @@ func CoreInterfaceMetrics() (L []*model.MetricValue) {
 		if !conf.Rate {
 			L = append(L, CounterValue("netcard.if.in.bytes", netIf.InBytes, ifacetag, iptag))
 			L = append(L, CounterValue("netcard.if.out.bytes", netIf.OutBytes, ifacetag, iptag))
-			L = append(L, CounterValue("netcard.if.total.bytes", netIf.TotalBytes, ifacetag, iptag))
 		} else {
 			inr, ts, err := g.Rate(myip, netIf.Iface, "ifin", uint64(netIf.InBytes), ctime)
 			if err == nil {
