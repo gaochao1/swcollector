@@ -12,11 +12,10 @@ import (
 	"strconv"
 	"strings"
 
+	pfc "github.com/baishancloud/goperfcounter"
 	"github.com/baishancloud/octopux-swcollector/g"
 	"github.com/open-falcon/common/model"
 	"github.com/toolkits/nux"
-
-	pfc "github.com/baishancloud/goperfcounter"
 )
 
 var (
@@ -171,35 +170,30 @@ func getIptableTraiffic(in string) (out uint64, err error) {
 
 }
 
-func getTraffic(ipt string) (wi string, li string, wo string, lo string, err error) {
+func getTraffic(ipt string) (wiv uint64, liv uint64, wov uint64, lov uint64, err error) {
 
 	aiv, err := getIptableTraiffic(ipchain("ai", ipt))
 	if err != nil {
-		return "", "", "", "", err
+		return 0, 0, 0, 0, err
 	}
-	liv, err := getIptableTraiffic(ipchain("li", ipt))
+	liv, err = getIptableTraiffic(ipchain("li", ipt))
 	if err != nil {
-		return "", "", "", "", err
+		return 0, 0, 0, 0, err
 	}
 	aov, err := getIptableTraiffic(ipchain("ao", ipt))
 	if err != nil {
-		return "", "", "", "", err
+		return 0, 0, 0, 0, err
 	}
 
-	lov, err := getIptableTraiffic(ipchain("lo", ipt))
+	lov, err = getIptableTraiffic(ipchain("lo", ipt))
 	if err != nil {
-		return "", "", "", "", err
+		return 0, 0, 0, 0, err
 	}
 
-	wiv := aiv - liv
-	wov := aov - lov
+	wiv = aiv - liv
+	wov = aov - lov
 
-	wi = strconv.FormatUint(wiv, 10)
-	wo = strconv.FormatUint(wov, 10)
-	li = strconv.FormatUint(liv, 10)
-	lo = strconv.FormatUint(lov, 10)
-
-	return wi, li, wo, lo, nil
+	return wiv, liv, wov, lov, nil
 
 }
 
@@ -219,7 +213,8 @@ func CoreInterfaceMetrics() (L []*model.MetricValue) {
 		myip = g.IP()
 	}
 	log.Println("myip: ", myip)
-	ifacePrefix := g.Config().Collector.IfacePrefix
+	conf := g.Config()
+	ifacePrefix := conf.Collector.IfacePrefix
 	ctime := time.Now().Unix()
 	netIfs, err := nux.NetIfs(ifacePrefix)
 	if err != nil {
@@ -229,20 +224,23 @@ func CoreInterfaceMetrics() (L []*model.MetricValue) {
 
 	for _, netIf := range netIfs {
 		ifacetag := "iface=" + netIf.Iface
-		L = append(L, CounterValue("netcard.if.in.bytes", netIf.InBytes, ifacetag, iptag))
-		L = append(L, CounterValue("netcard.if.out.bytes", netIf.OutBytes, ifacetag, iptag))
-		L = append(L, CounterValue("netcard.if.total.bytes", netIf.TotalBytes, ifacetag, iptag))
-		inr, err := g.Rate(myip, netIf.Iface, "ifin", uint64(netIf.InBytes), ctime)
-		if err == nil {
-			L = append(L, GaugeValue("ifinrate", inr, ifacetag, iptag))
-		}
-		outr, err := g.Rate(myip, netIf.Iface, "ifout", uint64(netIf.OutBytes), ctime)
-		if err == nil {
-			L = append(L, GaugeValue("ifoutrate", outr, ifacetag, iptag))
-		}
-		allr, err := g.Rate(myip, netIf.Iface, "ifall", uint64(netIf.TotalBytes), ctime)
-		if err == nil {
-			L = append(L, GaugeValue("ifallrate", allr, ifacetag, iptag))
+		if !conf.Rate {
+			L = append(L, CounterValue("netcard.if.in.bytes", netIf.InBytes, ifacetag, iptag))
+			L = append(L, CounterValue("netcard.if.out.bytes", netIf.OutBytes, ifacetag, iptag))
+			L = append(L, CounterValue("netcard.if.total.bytes", netIf.TotalBytes, ifacetag, iptag))
+		} else {
+			inr, ts, err := g.Rate(myip, netIf.Iface, "ifin", uint64(netIf.InBytes), ctime)
+			if err == nil {
+				L = append(L, GaugeValueSliceTS("ifinrate", ts, inr, ifacetag, iptag)...)
+			}
+			outr, ts, err := g.Rate(myip, netIf.Iface, "ifout", uint64(netIf.OutBytes), ctime)
+			if err == nil {
+				L = append(L, GaugeValueSliceTS("ifoutrate", ts, outr, ifacetag, iptag)...)
+			}
+			allr, ts, err := g.Rate(myip, netIf.Iface, "ifall", uint64(netIf.TotalBytes), ctime)
+			if err == nil {
+				L = append(L, GaugeValueSliceTS("ifallrate", ts, allr, ifacetag, iptag)...)
+			}
 		}
 	}
 	return L
@@ -301,30 +299,28 @@ func CoreTrafficMetrics() (L []*model.MetricValue) {
 			continue
 		}
 		L = append(L, GaugeValue("traffic.collect.status", 0, ifacetag, iptag))
-		L = append(L, CounterValue("traffic.wan.in", wi, ifacetag, iptag))
-		L = append(L, CounterValue("traffic.lan.in", li, ifacetag, iptag))
-		L = append(L, CounterValue("traffic.wan.out", wo, ifacetag, iptag))
-		L = append(L, CounterValue("traffic.lan.out", lo, ifacetag, iptag))
-		if conf.Rate == true {
-			wiv, _ := strconv.ParseUint(wi, 10, 64)
-			wov, _ := strconv.ParseUint(wo, 10, 64)
-			liv, _ := strconv.ParseUint(li, 10, 64)
-			lov, _ := strconv.ParseUint(lo, 10, 64)
-			wir, err := g.Rate(ip, ifsub[0], "wi", wiv, ctime)
+		if !conf.Rate {
+			L = append(L, CounterValue("traffic.wan.in", wi, ifacetag, iptag))
+			L = append(L, CounterValue("traffic.lan.in", li, ifacetag, iptag))
+			L = append(L, CounterValue("traffic.wan.out", wo, ifacetag, iptag))
+			L = append(L, CounterValue("traffic.lan.out", lo, ifacetag, iptag))
+		} else {
+
+			wir, ts, err := g.Rate(ip, ifsub[0], "wi", wi, ctime)
 			if err == nil {
-				L = append(L, GaugeValue("waninrate", wir, ifacetag, iptag))
+				L = append(L, GaugeValueSliceTS("waninrate", ts, wir, ifacetag, iptag)...)
 			}
-			wor, err := g.Rate(ip, ifsub[0], "wo", wov, ctime)
+			wor, ts, err := g.Rate(ip, ifsub[0], "wo", wo, ctime)
 			if err == nil {
-				L = append(L, GaugeValue("wanoutrate", wor, ifacetag, iptag))
+				L = append(L, GaugeValueSliceTS("wanoutrate", ts, wor, ifacetag, iptag)...)
 			}
-			lir, err := g.Rate(ip, ifsub[0], "li", liv, ctime)
+			lir, ts, err := g.Rate(ip, ifsub[0], "li", li, ctime)
 			if err == nil {
-				L = append(L, GaugeValue("laninrate", lir, ifacetag, iptag))
+				L = append(L, GaugeValueSliceTS("laninrate", ts, lir, ifacetag, iptag)...)
 			}
-			lor, err := g.Rate(ip, ifsub[0], "lo", lov, ctime)
+			lor, ts, err := g.Rate(ip, ifsub[0], "lo", lo, ctime)
 			if err == nil {
-				L = append(L, GaugeValue("laninrate", lor, ifacetag, iptag))
+				L = append(L, GaugeValueSliceTS("laninrate", ts, lor, ifacetag, iptag)...)
 			}
 		}
 	}

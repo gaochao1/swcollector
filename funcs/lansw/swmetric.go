@@ -69,7 +69,7 @@ func initVariable() {
 	ignoreIface = conf.Switch.IgnoreIface
 	ignorePkt = conf.Switch.IgnorePkt
 	hightIface = conf.Switch.HightIface
-	interval = time.Duration(int64(conf.Transfer.Interval)/2) * time.Second
+	interval = time.Duration(conf.Transfer.Interval) * time.Second
 	isdebug = conf.Debug
 	limitCh = make(chan bool, conf.Switch.LimitConcur)
 
@@ -236,7 +236,7 @@ func MapIfName(ip string) {
 				}
 			}
 			if it.IsPriority == false {
-				it.Interval = 2 * it.Interval
+				it.Interval = it.Interval
 				LowQueue <- it
 			}
 

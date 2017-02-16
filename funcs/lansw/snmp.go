@@ -143,57 +143,63 @@ func Push2SendQueue(task *SnmpTask, ifstat *IfStats) bool {
 	var L []*model.MetricValue
 	if ifstat.IfHCInOctets > 0 {
 		if !enableRate {
-		L = append(L, funcs.CounterValueIp(ifstat.TS, ip, "switch.if.In", ifstat.IfHCInOctets, ifNameTag, ifIndexTag, ipTag))
-		}
-		rate, err := g.Rate(task.Ip, task.Ifname, "swin", ifstat.IfHCInOctets, ifstat.TS)
-		if err == nil && enableRate {
-			L = append(L, funcs.GaugeValueIp(ifstat.TS, ip, "swinrate", rate, ifNameTag, ifIndexTag, ipTag))
+			L = append(L, funcs.CounterValueIp(ifstat.TS, ip, "switch.if.In", ifstat.IfHCInOctets, ifNameTag, ifIndexTag, ipTag))
+		} else {
+			rate, ts, err := g.Rate(task.Ip, task.Ifname, "swin", ifstat.IfHCInOctets, ifstat.TS)
+			if err == nil {
+				L = append(L, funcs.GaugeValueIpSlicTs(ts, ip, "swinrate", rate, ifNameTag, ifIndexTag, ipTag)...)
+			}
 		}
 	}
 	if ifstat.IfHCOutOctets > 0 {
 		if !enableRate {
 			L = append(L, funcs.CounterValueIp(ifstat.TS, ip, "switch.if.Out", ifstat.IfHCOutOctets, ifNameTag, ifIndexTag, ipTag))
-		}
-		rate, err := g.Rate(task.Ip, task.Ifname, "swout", ifstat.IfHCOutOctets, ifstat.TS)
-		if err == nil && enableRate {
-			L = append(L, funcs.GaugeValueIp(ifstat.TS, ip, "swoutrate", rate, ifNameTag, ifIndexTag, ipTag))
+		} else {
+			rate, ts, err := g.Rate(task.Ip, task.Ifname, "swout", ifstat.IfHCOutOctets, ifstat.TS)
+			if err == nil && enableRate {
+				L = append(L, funcs.GaugeValueIpSlicTs(ts, ip, "swoutrate", rate, ifNameTag, ifIndexTag, ipTag)...)
+			}
 		}
 	}
 	if !ignorePkt {
 		if ifstat.IfHCInUcastPkts > 0 {
 			if !enableRate {
-			L = append(L, funcs.CounterValueIp(ifstat.TS, ip, "switch.if.InPkts", ifstat.IfHCInUcastPkts, ifNameTag, ifIndexTag, ipTag))
-			}
-			rate, err := g.Rate(task.Ip, task.Ifname, "inpkts", ifstat.IfHCInUcastPkts, ifstat.TS)
-			if err == nil && enableRate {
-				L = append(L, funcs.GaugeValueIp(ifstat.TS, ip, "swinpktsrate", rate, ifNameTag, ifIndexTag, ipTag))
+				L = append(L, funcs.CounterValueIp(ifstat.TS, ip, "switch.if.InPkts", ifstat.IfHCInUcastPkts, ifNameTag, ifIndexTag, ipTag))
+			} else {
+				rate, ts, err := g.Rate(task.Ip, task.Ifname, "inpkts", ifstat.IfHCInUcastPkts, ifstat.TS)
+				if err == nil {
+					L = append(L, funcs.GaugeValueIpSlicTs(ts, ip, "swinpktsrate", rate, ifNameTag, ifIndexTag, ipTag)...)
+				}
 			}
 		}
 		if ifstat.IfHCOutUcastPkts > 0 {
 			if !enableRate {
-			L = append(L, funcs.CounterValueIp(ifstat.TS, ip, "switch.if.OutPkts", ifstat.IfHCOutUcastPkts, ifNameTag, ifIndexTag, ipTag))
-			}
-			rate, err := g.Rate(task.Ip, task.Ifname, "outpkts", ifstat.IfHCOutUcastPkts, ifstat.TS)
-			if err == nil && enableRate {
-				L = append(L, funcs.GaugeValueIp(ifstat.TS, ip, "swoutpktsrate", rate, ifNameTag, ifIndexTag, ipTag))
+				L = append(L, funcs.CounterValueIp(ifstat.TS, ip, "switch.if.OutPkts", ifstat.IfHCOutUcastPkts, ifNameTag, ifIndexTag, ipTag))
+			} else {
+				rate, ts, err := g.Rate(task.Ip, task.Ifname, "outpkts", ifstat.IfHCOutUcastPkts, ifstat.TS)
+				if err == nil {
+					L = append(L, funcs.GaugeValueIpSlicTs(ts, ip, "swoutpktsrate", rate, ifNameTag, ifIndexTag, ipTag)...)
+				}
 			}
 		}
 		if ifstat.IfInDiscardPkts > 0 {
 			if !enableRate {
-			L = append(L, funcs.CounterValueIp(ifstat.TS, ip, "switch.if.InDisCardPkts", ifstat.IfInDiscardPkts, ifNameTag, ifIndexTag, ipTag))
-			}
-			rate, err := g.Rate(task.Ip, task.Ifname, "indcpkts", ifstat.IfInDiscardPkts, ifstat.TS)
-			if err == nil && enableRate {
-				L = append(L, funcs.GaugeValueIp(ifstat.TS, ip, "swindcpktsrate", rate, ifNameTag, ifIndexTag, ipTag))
+				L = append(L, funcs.CounterValueIp(ifstat.TS, ip, "switch.if.InDisCardPkts", ifstat.IfInDiscardPkts, ifNameTag, ifIndexTag, ipTag))
+			} else {
+				rate, ts, err := g.Rate(task.Ip, task.Ifname, "indcpkts", ifstat.IfInDiscardPkts, ifstat.TS)
+				if err == nil {
+					L = append(L, funcs.GaugeValueIpSlicTs(ts, ip, "swindcpktsrate", rate, ifNameTag, ifIndexTag, ipTag)...)
+				}
 			}
 		}
 		if ifstat.IfOutDiscardPkts > 0 {
 			if !enableRate {
-			L = append(L, funcs.CounterValueIp(ifstat.TS, ip, "switch.if.OutDiscardPkts", ifstat.IfOutDiscardPkts, ifNameTag, ifIndexTag, ipTag))
-			}
-			rate, err := g.Rate(task.Ip, task.Ifname, "outdcpkts", ifstat.IfOutDiscardPkts, ifstat.TS)
-			if err == nil && enableRate {
-				L = append(L, funcs.GaugeValueIp(ifstat.TS, ip, "swoutdcpktsrate", rate, ifNameTag, ifIndexTag, ipTag))
+				L = append(L, funcs.CounterValueIp(ifstat.TS, ip, "switch.if.OutDiscardPkts", ifstat.IfOutDiscardPkts, ifNameTag, ifIndexTag, ipTag))
+			} else {
+				rate, ts, err := g.Rate(task.Ip, task.Ifname, "outdcpkts", ifstat.IfOutDiscardPkts, ifstat.TS)
+				if err == nil {
+					L = append(L, funcs.GaugeValueIpSlicTs(ts, ip, "swoutdcpktsrate", rate, ifNameTag, ifIndexTag, ipTag)...)
+				}
 			}
 		}
 	}

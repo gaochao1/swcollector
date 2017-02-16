@@ -11,10 +11,6 @@ const (
 	MaxTaskWorkers  = 2000
 )
 
-//const (
-//	Flow = iota
-//	Pkts
-//)
 
 var (
 	HightQueue chan *SnmpTask
