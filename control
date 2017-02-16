@@ -15,7 +15,7 @@ dist=$(rpm --showrc | grep dist | grep el | awk '($2=="dist"){print $3 }' | awk 
 logfile=/var/log/supervisor/${app}.log
 iteration=3
 progpath="usr/local/octopux/${app}/"
-file_list="public control cfg.example.json ${app} perfcounter.json"
+file_list="control cfg.example.json ${app} perfcounter.json"
 
 function check_pid() {
 	running=$(ps -C $app | grep -v "PID TTY" | wc -l)
@@ -131,7 +131,7 @@ function tailf() {
 }
 
 function build() {
-	govvv build -o ${app}
+	go build -o ${app}
 	if [ $? -ne 0 ]; then
 		exit $?
 	fi
@@ -146,8 +146,7 @@ function rpm() {
 		echo "cant build rpm on this os!"
 		exit 1
 	fi
-	version=$(./${app} -v | grep Version | awk -F : '{print $2}')
-	iteration=$(./${app} -v | grep commit | awk -F : '{print $2}')
+	version=$(./${app} -v)
 	supervisorconf
 	mkdir -p "rpm/${progpath}"
 	mkdir -p rpm/etc/supervisor/conf.d/
