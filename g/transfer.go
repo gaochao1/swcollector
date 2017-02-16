@@ -24,17 +24,24 @@ var (
 
 func GetHost() {
 	newips := make([]string, 0)
-	pos := strings.Index(Config().Transfer.Addr, ":")
-	port := Config().Transfer.Addr[pos:]
-	temp, err := net.LookupHost(Config().Transfer.Addr[:pos])
-	if err != nil {
-		if Config().Debug {
-			log.Printf("%s Lookup Host Err: %s", Config().Transfer.Addr, err.Error())
+	newipmaps := make(map[string]int)
+	addrs := Config().Transfer.Addrs
+	for _, a := range addrs {
+		pos := strings.Index(a, ":")
+		port := a[pos:]
+		temp, err := net.LookupHost(a[:pos])
+		if err != nil {
+			if Config().Debug {
+				log.Printf("%s Lookup Host Err: %s", a, err.Error())
+			}
+		} else {
+			for _, j := range temp {
+				newipmaps[j+port] = 1
+			}
 		}
-	} else {
-		for _, j := range temp {
-			newips = append(newips, j+port)
-		}
+	}
+	for k, _ := range newipmaps {
+		newips = append(newips, k)
 	}
 
 	sort.Strings(newips)

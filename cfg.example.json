@@ -37,7 +37,7 @@
     },
     "transfer": {
         "enabled": true,
-        "addr": "8.8.8.8:8433",
+        "addrs": ["8.8.8.8:8433"],
         "interval": 60,
         "timeout": 1000
     },

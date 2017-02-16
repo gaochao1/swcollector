@@ -18,8 +18,9 @@ import (
 // 4.5.23: 修复本地交换机扫描错误将linux服务器判断为交换机
 // 4.5.25: 修复网口只配置IP时，列举对应网段IP列表出错
 // 5.0.1: 采集的累进值数据可以换算成rate。
+// 5.0.2: 传输目标配置改为数组。
 
 const (
-	VERSION          = "5.0.1"
+	VERSION          = "5.0.2"
 	COLLECT_INTERVAL = time.Second
 )
