@@ -55,6 +55,10 @@ func GetHost() {
 	}
 
 	l := len(newips)
+	if l < 1 {
+		log.Println("dig transfer ip get zero")
+		return
+	}
 	ft := make([]uint32, l)
 	for i := 0; i < l; i++ {
 		ft[i] = 0
@@ -77,7 +81,11 @@ func SendMetrics(metrics []*model.MetricValue, resp *model.TransferResponse) {
 	}
 
 	ipsNum := len(sendips)
-
+	//TODO ipsNum 可能为0.
+	if ipsNum == 0 {
+		log.Println("no swtfr find.")
+		return
+	}
 	idx := rand.Int() % ipsNum
 	for times := 0; times < ipsNum; times++ {
 		addr := sendips[idx]
