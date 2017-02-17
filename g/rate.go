@@ -42,7 +42,7 @@ func Rate(ip string, port string, item string, counter uint64, ctime int64) (rat
 		return 0, nil, errors.New("not previous record")
 	}
 	rateval := float64(counter-pcounter) / float64(ctime-ptime)
-	if rateval > 1250000000 || rateval < 0 {
+	if rateval > 1442177280 || rateval < 0 {
 		err := errors.New(fmt.Sprintf("calc rate error. at time:%v,  current:%v,pretime:%v,previous:%v", ctime, counter, ptime, pcounter))
 		return 0, nil, err
 	}
