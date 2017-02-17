@@ -83,6 +83,7 @@ func NewMetricValueIp(TS int64, ip, metric string, val interface{}, dataType str
 }
 
 func NewMetricValueIpSlicTs(ts []int64, ip, metric string, val interface{}, dataType string, tags ...string) []*model.MetricValue {
+	sec := int64(g.Config().Transfer.Interval)
 	hostname, _ := g.Hostname()
 	collectstr := "collecter=" + hostname
 	tag := ""
@@ -101,7 +102,9 @@ func NewMetricValueIpSlicTs(ts []int64, ip, metric string, val interface{}, data
 			Metric:    metric,
 			Value:     val,
 			Type:      dataType,
+			Endpoint:  ip,
 			Timestamp: t,
+			Step:      sec,
 			Tags:      tag,
 		}
 		mvs = append(mvs, &mv)

@@ -19,8 +19,9 @@ import (
 // 4.5.25: 修复网口只配置IP时，列举对应网段IP列表出错
 // 5.0.1: 采集的累进值数据可以换算成rate。
 // 5.0.2: 传输目标配置改为数组。
+// 5.0.3: 修改交换机的metric格式错误
 
 const (
-	VERSION          = "5.0.2"
+	VERSION          = "5.0.3"
 	COLLECT_INTERVAL = time.Second
 )

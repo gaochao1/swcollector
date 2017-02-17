@@ -236,10 +236,6 @@ func CoreInterfaceMetrics() (L []*model.MetricValue) {
 			if err == nil {
 				L = append(L, GaugeValueSliceTS("ifoutrate", ts, outr, ifacetag, iptag)...)
 			}
-			allr, ts, err := g.Rate(myip, netIf.Iface, "ifall", uint64(netIf.TotalBytes), ctime)
-			if err == nil {
-				L = append(L, GaugeValueSliceTS("ifallrate", ts, allr, ifacetag, iptag)...)
-			}
 		}
 	}
 	return L
@@ -319,7 +315,7 @@ func CoreTrafficMetrics() (L []*model.MetricValue) {
 			}
 			lor, ts, err := g.Rate(ip, ifsub[0], "lo", lo, ctime)
 			if err == nil {
-				L = append(L, GaugeValueSliceTS("laninrate", ts, lor, ifacetag, iptag)...)
+				L = append(L, GaugeValueSliceTS("lanoutrate", ts, lor, ifacetag, iptag)...)
 			}
 		}
 	}
