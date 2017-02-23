@@ -22,8 +22,9 @@ import (
 // 5.0.3: 修改交换机的metric格式错误
 // 5.0.5: 修改交换机采集者个数为1.
 // 5.0.6: fix rpc timeout error 没有处理
+// 5.0.6: fix trafffic metric 没有 endpoint 字段
 
 const (
-	VERSION          = "5.0.6"
+	VERSION          = "5.0.7"
 	COLLECT_INTERVAL = time.Second
 )
