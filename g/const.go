@@ -21,8 +21,9 @@ import (
 // 5.0.2: 传输目标配置改为数组。
 // 5.0.3: 修改交换机的metric格式错误
 // 5.0.5: 修改交换机采集者个数为1.
+// 5.0.6: fix rpc timeout error 没有处理
 
 const (
-	VERSION          = "5.0.5"
+	VERSION          = "5.0.6"
 	COLLECT_INTERVAL = time.Second
 )
