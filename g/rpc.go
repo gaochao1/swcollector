@@ -76,6 +76,7 @@ func (this *SingleConnRpcClient) Call(method string, args interface{}, reply int
 	case <-time.After(timeout):
 		log.Printf("[WARN] rpc call timeout %v => %v", this.rpcClient, this.RpcServer)
 		this.close()
+		return errors.New("RPC Timeout")
 	case err := <-done:
 		if err != nil {
 			this.close()
