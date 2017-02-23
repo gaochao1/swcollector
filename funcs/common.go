@@ -27,6 +27,7 @@ func NewMetricValueSliceTS(metric string, ts []int64, val interface{}, dataType 
 	tag := ""
 	size := len(tags)
 	sec := int64(g.Config().Transfer.Interval)
+	hostname, _ := g.Hostname()
 
 	if size > 0 {
 		tag = strings.Join(tags, ",")
@@ -40,6 +41,7 @@ func NewMetricValueSliceTS(metric string, ts []int64, val interface{}, dataType 
 			Timestamp: t,
 			Tags:      tag,
 			Step:      sec,
+			Endpoint:  hostname,
 		}
 		mvs = append(mvs, &mv)
 	}
