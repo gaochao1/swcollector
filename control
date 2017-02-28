@@ -32,6 +32,7 @@ autostart=true
 autorestart=true
 startsecs=1
 startretries=1000000
+minfds=64000
 exitcodes=0
 stopsignal=SIGTERM
 stopwaitsecs=300
@@ -54,6 +55,7 @@ EOF
 cat << EOF > postinsl.in
 supervisorctl reread
 supervisorctl update
+supervisorctl restart ${app}
 EOF
 
 	echo "OK"
@@ -76,7 +78,7 @@ function run() {
 		cp cfg.example.json ${conf}
 	fi
 	ulimit -HSn 65536
-	./$app -c ${conf} >>${logfile} 2>&1
+	./$app -c ${conf}
 }
 
 function start() {
@@ -156,7 +158,7 @@ function rpm() {
 
 	cp ${app}.conf rpm/etc/supervisor/conf.d
 
-	fpm -s dir -t rpm -n ${app} -m dotwoo_test -v ${version} --iteration ${iteration} --rpm-dist ${dist} --after-install postinsl.in --after-upgrade postinsl.in --after-remove postinsl.in -C rpm --config-files etc/supervisor/conf.d/${app}.conf --config-files ${progpath}cfg.json -f --url http://www.baishancloud.com/ --provides dotwoo@baishancloud.com --vendor dotwoo@baishancloud.com
+	fpm -s dir -t rpm -n ${app} -m dotwoo_test -v ${version} --iteration ${iteration} --rpm-dist ${dist} --after-install postinsl.in --after-upgrade postinsl.in --after-remove postinsl.in -C rpm --config-files ${progpath}cfg.json --config-files ${progpath}perfcounter.json -f --url http://www.baishancloud.com/ --provides dotwoo@baishancloud.com --vendor dotwoo@baishancloud.com
 
 	rm -fr rpm
 }
