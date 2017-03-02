@@ -13,11 +13,12 @@ import (
 )
 
 func Collect() {
-	if !g.Config().Transfer.Enabled {
+	cfg := g.Config()
+	if !cfg.Transfer.Enabled {
 		return
 	}
 
-	if len(g.Config().Transfer.Addrs) == 0 {
+	if len(cfg.Transfer.Addrs) == 0 {
 		return
 	}
 	go lansw.StartLanSWCollector()
@@ -35,8 +36,9 @@ func collect(sec int64, fns []func() []*model.MetricValue) {
 
 func MetricToTransfer(sec int64, fns []func() []*model.MetricValue) {
 	mvs := []*model.MetricValue{}
-	ignoreMetrics := g.Config().IgnoreMetrics
-	sec1 := int64(g.Config().Transfer.Interval)
+	cfg := g.Config()
+	ignoreMetrics := cfg.IgnoreMetrics
+	sec1 := int64(cfg.Transfer.Interval)
 	hostname, _ := g.Hostname()
 	now := time.Now().Unix()
 	for _, fn := range fns {

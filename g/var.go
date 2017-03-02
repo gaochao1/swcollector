@@ -3,7 +3,6 @@ package g
 import (
 	"log"
 	"net"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -13,16 +12,6 @@ import (
 	tnet "github.com/toolkits/net"
 	"github.com/toolkits/slice"
 )
-
-var Root string
-
-func InitRootDir() {
-	var err error
-	Root, err = os.Getwd()
-	if err != nil {
-		log.Fatalln("getwd fail:", err)
-	}
-}
 
 var LocalInterNetIps []string
 
@@ -154,6 +143,7 @@ var (
 )
 
 func ReportPorts() []int64 {
+
 	reportPortsLock.RLock()
 	defer reportPortsLock.RUnlock()
 	return reportPorts

@@ -29,12 +29,6 @@
         "ignorePkt": false,
         "limitConcur": 1000
     },
-    "heartbeat": {
-        "enabled": false,
-        "addr": "",
-        "interval": 60,
-        "timeout": 1000
-    },
     "transfer": {
         "enabled": true,
         "addrs": ["8.8.8.8:8433"],

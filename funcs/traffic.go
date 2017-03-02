@@ -34,16 +34,17 @@ func init() {
 }
 
 func getIpFaces() (map[string]string, []*net.IPNet) {
+	cfg := g.Config()
 	facelist, err := net.Interfaces()
 	if err != nil {
 		log.Println("ERROR: get interfaces!", err)
 		return nil, nil
 	}
 	if len(lanlist) == 0 {
-		if g.Config().Collector == nil || g.Config().Collector.LanIpnet == nil {
+		if cfg.Collector == nil || cfg.Collector.LanIpnet == nil {
 			return nil, nil
 		}
-		lanstrs := g.Config().Collector.LanIpnet
+		lanstrs := cfg.Collector.LanIpnet
 		parseIPNets(&lanstrs, &lanlist)
 
 	}

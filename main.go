@@ -34,21 +34,11 @@ func main() {
 	g.ParseConfig(*cfg)
 
 	g.GetHost()
-	g.InitRootDir()
 	g.InitLocalIps()
 	g.InitFaceIp()
 	g.InitRpcClients()
 
-	if *check {
-		funcs.CheckCollector()
-		os.Exit(0)
-	}
-
 	funcs.BuildMappers()
-
-	cron.ReportAgentStatus()
-	cron.SyncBuiltinMetrics()
-	cron.SyncTrustableIps()
 	cron.Collect()
 
 	go http.Start()

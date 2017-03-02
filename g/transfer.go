@@ -127,11 +127,12 @@ func SendMetrics(metrics []*model.MetricValue, resp *model.TransferResponse) {
 }
 
 func initTransferClient(addr string) {
-	TransferClientsLock.Lock()
-	TransferClients[addr] = &SingleConnRpcClient{
+	cli := &SingleConnRpcClient{
 		RpcServer: addr,
 		Timeout:   time.Duration(Config().Transfer.Timeout) * time.Millisecond,
 	}
+	TransferClientsLock.Lock()
+	TransferClients[addr] = cli
 	TransferClientsLock.Unlock()
 }
 

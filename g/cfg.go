@@ -27,13 +27,6 @@ type SwitchConfig struct {
 	HightIface  []string `json:"hightIface"`
 }
 
-type HeartbeatConfig struct {
-	Enabled  bool   `json:"enabled"`
-	Addr     string `json:"addr"`
-	Interval int    `json:"interval"`
-	Timeout  int    `json:"timeout"`
-}
-
 type TransferConfig struct {
 	Enabled  bool     `json:"enabled"`
 	Addrs    []string `json:"addrs"`
@@ -57,7 +50,6 @@ type GlobalConfig struct {
 	IP            string           `json:"ip"`
 	Hostname      string           `json:"hostname"`
 	Switch        *SwitchConfig    `json:"switch"`
-	Heartbeat     *HeartbeatConfig `json:"heartbeat"`
 	Transfer      *TransferConfig  `json:"transfer"`
 	Http          *HttpConfig      `json:"http"`
 	Collector     *CollectorConfig `json:"collector"`
@@ -72,8 +64,9 @@ var (
 
 func Config() *GlobalConfig {
 	lock.RLock()
-	defer lock.RUnlock()
-	return config
+	ret := config
+	lock.RUnlock()
+	return ret
 }
 
 func Hostname() (string, error) {
@@ -136,9 +129,8 @@ func ParseConfig(cfg string) {
 	}
 
 	lock.Lock()
-	defer lock.Unlock()
-
 	config = &c
+	lock.Unlock()
 
 	log.Println("read config file:", cfg, "successfully")
 
