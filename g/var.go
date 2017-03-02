@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/open-falcon/common/model"
 	tnet "github.com/toolkits/net"
@@ -104,20 +103,6 @@ func InitLocalIps() {
 	InitCounterMap()
 }
 
-var (
-	HbsClient *SingleConnRpcClient
-)
-
-func InitRpcClients() {
-	if Config().Heartbeat.Enabled {
-		HbsClient = &SingleConnRpcClient{
-			RpcServer: Config().Heartbeat.Addr,
-			Timeout:   time.Duration(Config().Heartbeat.Timeout) * time.Millisecond,
-		}
-	}
-
-}
-
 func SendToTransfer(metrics []*model.MetricValue) {
 	if len(metrics) == 0 {
 		return
@@ -135,45 +120,6 @@ func SendToTransfer(metrics []*model.MetricValue) {
 	if debug {
 		log.Println("<=", &resp)
 	}
-}
-
-var (
-	reportPorts     []int64
-	reportPortsLock = new(sync.RWMutex)
-)
-
-func ReportPorts() []int64 {
-
-	reportPortsLock.RLock()
-	defer reportPortsLock.RUnlock()
-	return reportPorts
-}
-
-func SetReportPorts(ports []int64) {
-	reportPortsLock.Lock()
-	reportPorts = ports
-	reportPortsLock.Unlock()
-
-}
-
-var (
-	// tags => {1=>name, 2=>cmdline}
-	// e.g. 'name=falcon-agent'=>{1=>falcon-agent}
-	// e.g. 'cmdline=xx'=>{2=>xx}
-	reportProcs     map[string]map[int]string
-	reportProcsLock = new(sync.RWMutex)
-)
-
-func ReportProcs() map[string]map[int]string {
-	reportProcsLock.RLock()
-	defer reportProcsLock.RUnlock()
-	return reportProcs
-}
-
-func SetReportProcs(procs map[string]map[int]string) {
-	reportProcsLock.Lock()
-	reportProcs = procs
-	reportProcsLock.Unlock()
 }
 
 var (

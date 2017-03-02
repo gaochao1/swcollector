@@ -22,7 +22,6 @@ func main() {
 
 	cfg := flag.String("c", "cfg.json", "configuration file")
 	version := flag.Bool("v", false, "show version")
-	check := flag.Bool("check", false, "check collector")
 
 	flag.Parse()
 
@@ -36,7 +35,6 @@ func main() {
 	g.GetHost()
 	g.InitLocalIps()
 	g.InitFaceIp()
-	g.InitRpcClients()
 
 	funcs.BuildMappers()
 	cron.Collect()
