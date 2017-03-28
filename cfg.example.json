@@ -30,7 +30,8 @@
 		"displayByBit": true,
 		"fastPingMode": false,
 		"limitConcur": 1000
- 	}, 
+	}, 
+    "mapfile": "hostnames",
     "transfer": {
         "enabled": true,
         "addr": "127.0.0.1:8433",

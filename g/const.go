@@ -13,6 +13,6 @@ import (
 // 3.2.1 add Discards,Error,UnknownProtos,QLen，fix some bugs
 // 3.2.1.1 debugmetric support multi endpoints and metrics
 const (
-	VERSION          = "3.2.1.1"
+	VERSION          = "3.2.1.2"
 	COLLECT_INTERVAL = time.Second
 )
