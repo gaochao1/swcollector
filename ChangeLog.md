@@ -1,5 +1,7 @@
 # Changelog #
 ## 3.2.1.1 ##
+1. 支持配置 endpoint 的 ip 到 hostname 的映射，上传将 ip 改为 hostname
+## 3.2.1.1 ##
 1. debugmetric 现在支持配置多个 endpoint 和 metric 了
 ## 3.2.1 ##
 #### 新功能 ####

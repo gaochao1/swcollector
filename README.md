@@ -95,7 +95,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
             "172.16.114.233" 
  		],
 		"gosnmp":true,              #是否使用 gosnmp 采集, false 则使用 snmpwalk
- 		"pingTimeout":300,          #Ping超时时间，单位毫秒
+		"pingTimeout":300,          #Ping超时时间，单位毫秒
 		"pingRetry":4,				#Ping探测重试次数
 		"community":"public",		#SNMP认证字符串
 		"snmpTimeout":1000,			#SNMP超时时间，单位毫秒
@@ -113,6 +113,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 		"fastPingMode": false,		#是否开启 fastPing 模式，开启 Ping 的效率更高，并能解决高并发时，会有小概率 ping 通宕机的交换机地址的情况。但 fastPing 可能被防火墙过滤。 
 		"limitConcur": 1000			#限制并发数
  	}, 
+    "mapfile":"hostnames",
     "transfer": {
         "enabled": true,
         "addr": "127.0.0.1:8433",
@@ -123,6 +124,13 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
         "enabled": true,
         "listen": ":1989"
     }
+}
+```
+通过配置 mapfile 属性指定上传 Endpoint 值的 ip 到 hostname 映射，文件为 json 格式键值对，参考以下：
+```
+{
+    "192.168.56.101": "test-host1",
+    "192.168.56.102": "test-host2"
 }
 ```
 

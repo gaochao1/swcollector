@@ -69,13 +69,21 @@ type GlobalConfig struct {
 	Heartbeat   *HeartbeatConfig   `json:"heartbeat"`
 	Transfer    *TransferConfig    `json:"transfer"`
 	Http        *HttpConfig        `json:"http"`
+	Mapfile     string             `json:"mapfile"`
 }
 
 var (
-	ConfigFile string
-	config     *GlobalConfig
-	lock       = new(sync.RWMutex)
+	ConfigFile          string
+	config             *GlobalConfig
+	switcherNames       map[string]interface{}
+	lock                = new(sync.RWMutex)
 )
+
+func SwitcherNames() map[string]interface{} {
+	lock.RLock()
+	defer lock.RUnlock()
+	return switcherNames
+}
 
 func Config() *GlobalConfig {
 	lock.RLock()
@@ -110,6 +118,31 @@ func IP() string {
 	return ip
 }
 
+func ParseMapfile(mapfile string) {
+	if mapfile == "" {
+		log.Println("no mapfile specified.")
+		return
+	}
+
+	if !file.IsExist(mapfile) {
+		log.Println("mapfile:", mapfile, "is not existent.")
+		return
+	}
+
+	configContent, err := file.ToTrimString(mapfile)
+	if err != nil {
+		log.Fatalln("read config file:", mapfile, "fail:", err)
+	}
+
+	var obj interface{}
+	err = json.Unmarshal([]byte(configContent), &obj)
+	if err != nil {
+		log.Fatalln("parse config file:", mapfile, "fail:", err)
+	}
+
+	switcherNames = obj.(map[string]interface{})
+}
+
 func ParseConfig(cfg string) {
 	if cfg == "" {
 		log.Fatalln("use -c to specify configuration file")
@@ -131,6 +164,8 @@ func ParseConfig(cfg string) {
 	if err != nil {
 		log.Fatalln("parse config file:", cfg, "fail:", err)
 	}
+
+	ParseMapfile(c.Mapfile)
 
 	lock.Lock()
 	defer lock.Unlock()
