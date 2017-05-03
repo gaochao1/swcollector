@@ -13,9 +13,9 @@ app=octopux-$module
 conf=cfg.json
 dist=$(rpm --showrc | grep dist | grep el | awk '($2=="dist"){print $3 }' | awk -F . '{print $2}')
 logfile=/var/log/supervisor/${app}.log
-iteration=3
+iteration=$(date +%s)
 progpath="usr/local/octopux/${app}/"
-file_list="control cfg.example.json ${app} perfcounter.json"
+file_list="control cfg.example.json ${app} perfcounter.json ipt_ser_traffic.sh"
 
 function check_pid() {
 	running=$(ps -C $app | grep -v "PID TTY" | wc -l)
@@ -39,14 +39,14 @@ stopwaitsecs=300
 user=root
 redirect_stderr=true
 stdout_logfile=/var/log/supervisor/${app}.log
-stdout_logfile_maxbytes=1MB
+stdout_logfile_maxbytes=10MB
 stdout_logfile_backups=10
-stdout_capture_maxbytes=1MB
+stdout_capture_maxbytes=10MB
 stdout_events_enabled=true
 stderr_logfile=/var/log/supervisor/${app}.err.log
-stderr_logfile_maxbytes=1MB
+stderr_logfile_maxbytes=10MB
 stderr_logfile_backups=10
-stderr_capture_maxbytes=1MB
+stderr_capture_maxbytes=10MB
 stderr_events_enabled=true
 
 EOF
@@ -152,11 +152,13 @@ function rpm() {
 	supervisorconf
 	mkdir -p "rpm/${progpath}"
 	mkdir -p rpm/etc/supervisor/conf.d/
+	#mkdir -p rpm/etc/supervisord.d/
 
 	cp -R ${file_list} rpm/${progpath}
 	cp cfg.example.json rpm/${progpath}cfg.json
 
 	cp ${app}.conf rpm/etc/supervisor/conf.d
+	#cp ${app}.conf rpm/etc/supervisord.d/${app}.ini
 
 	fpm -s dir -t rpm -n ${app} -m dotwoo_test -v ${version} --iteration ${iteration} --rpm-dist ${dist} --after-install postinsl.in --after-upgrade postinsl.in --after-remove postinsl.in -C rpm --config-files ${progpath}cfg.json --config-files ${progpath}perfcounter.json -f --url http://www.baishancloud.com/ --provides dotwoo@baishancloud.com --vendor dotwoo@baishancloud.com
 

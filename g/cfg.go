@@ -16,6 +16,8 @@ type SwitchConfig struct {
 
 	PingTimeout int `json:"pingTimeout"`
 	PingRetry   int `json:"pingRetry"`
+	Heartbeat   int `json:"heartbeat"`
+	SmudgePort  int `json:"smudgeport"`
 
 	Community   string `json:"community"`
 	SnmpTimeout int    `json:"snmpTimeout"`
@@ -47,6 +49,7 @@ type CollectorConfig struct {
 type GlobalConfig struct {
 	Debug         bool             `json:"debug"`
 	Rate          bool             `json:"rate"`
+	RatePrevTime  int64            `json:"rateprevtime"`
 	IP            string           `json:"ip"`
 	Hostname      string           `json:"hostname"`
 	Switch        *SwitchConfig    `json:"switch"`
@@ -127,7 +130,9 @@ func ParseConfig(cfg string) {
 	if err != nil {
 		log.Fatalln("parse config file:", cfg, "fail:", err)
 	}
-
+	if c.RatePrevTime < int64(2*c.Transfer.Interval) {
+		c.RatePrevTime = int64(5 * c.Transfer.Interval)
+	}
 	lock.Lock()
 	config = &c
 	lock.Unlock()

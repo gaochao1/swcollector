@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	pfc "github.com/baishancloud/goperfcounter"
 	"github.com/open-falcon/common/model"
 	tnet "github.com/toolkits/net"
 	"github.com/toolkits/slice"
@@ -103,9 +104,9 @@ func InitLocalIps() {
 	InitCounterMap()
 }
 
-func SendToTransfer(metrics []*model.MetricValue) {
+func SendToTransfer(metrics []*model.MetricValue) (success bool) {
 	if len(metrics) == 0 {
-		return
+		return true
 	}
 
 	debug := Config().Debug
@@ -115,11 +116,15 @@ func SendToTransfer(metrics []*model.MetricValue) {
 	}
 
 	var resp model.TransferResponse
-	SendMetrics(metrics, &resp)
+	success = SendMetrics(metrics, &resp)
 
 	if debug {
 		log.Println("<=", &resp)
 	}
+	if success {
+		pfc.Meter("", int64(len(metrics)))
+	}
+	return success
 }
 
 var (

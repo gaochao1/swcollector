@@ -24,8 +24,13 @@ import (
 // 5.0.6: fix rpc timeout error 没有处理
 // 5.0.7: fix trafffic metric 没有 endpoint 字段
 // 5.0.8: fix 交换机不响应 ping 情况
+// 5.1.2: 修改snmp采集方式为snmp getbluk
+// 5.1.3: 修改主备探测方式为smudge
+// 5.1.4: 改正snmp任务错误判断，调整主备日志记录。
+// 5.1.7: 更新支持区分ipv6 流量采集.
+// 5.1.8: 对collector ip 的smudge dead 状态增加curl check
 
 const (
-	VERSION          = "5.0.8"
+	VERSION          = "5.1.8"
 	COLLECT_INTERVAL = time.Second
 )

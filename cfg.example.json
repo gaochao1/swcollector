@@ -1,6 +1,7 @@
 {
     "debug": true,
     "rate": true,
+	"rateprevtime":600,
     "hostname": "",
     "ip": "",
     "switch": {
@@ -11,6 +12,8 @@
         ],
         "pingTimeout": 1000,
         "pingRetry": 3,
+        "heartbeat": 500,
+        "smudgeport": 988,
         "community": "public",
         "snmpTimeout": 20000,
         "snmpRetry": 5,
@@ -31,7 +34,9 @@
     },
     "transfer": {
         "enabled": true,
-        "addrs": ["8.8.8.8:8433"],
+        "addrs": [
+            "8.8.8.8:8433"
+        ],
         "interval": 60,
         "timeout": 1000
     },

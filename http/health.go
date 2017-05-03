@@ -17,11 +17,10 @@ func configHealthRoutes() {
 	})
 
 	http.HandleFunc("/iscollector", func(w http.ResponseWriter, r *http.Request) {
-		if lansw.IsCollector {
+		if lansw.IsCollector.IsSet() {
 			w.Write([]byte("true"))
 		} else {
 			w.WriteHeader(400)
-			//w.Write([]byte("false"))
 		}
 
 	})

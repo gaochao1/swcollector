@@ -1,9 +1,11 @@
 package g
 
 import (
+	"log"
 	"errors"
 	"fmt"
 	"sync"
+	pfc "github.com/baishancloud/goperfcounter"
 )
 
 var (
@@ -38,8 +40,14 @@ func Rate(ip string, port string, item string, counter uint64, ctime int64) (rat
 	mapTime[key] = ctime
 	rateLock.Unlock()
 
-	if !pok || !tok || ctime-ptime > 1800 || ctime-ptime <= 0 {
+	if !pok || !tok || ctime-ptime <= 0 {
 		return 0, nil, errors.New("not previous record")
+	}
+	if ctime-ptime > config.RatePrevTime {
+		info:= fmt.Sprintf("ip=%s,port=%s,item=%s",ip,port,item)
+		pfc.Report("OverPrevRecord,"+info,"OverPrevRecord"+info)
+		log.Println("OverPrevRecord,"+info)
+		return 0, nil, errors.New("previous record is over prevtime")
 	}
 	rateval := float64(counter-pcounter) / float64(ctime-ptime)
 	if rateval > 1442177280 || rateval < 0 {

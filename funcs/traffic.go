@@ -12,6 +12,10 @@ import (
 	"strconv"
 	"strings"
 
+	"sort"
+
+	"sync"
+
 	pfc "github.com/baishancloud/goperfcounter"
 	"github.com/baishancloud/octopux-swcollector/g"
 	"github.com/open-falcon/common/model"
@@ -19,8 +23,14 @@ import (
 )
 
 var (
-	lanlist        []net.IPNet
-	iptablesbinary string
+	lanlist         []net.IPNet
+	iptablesbinary  string
+	ip6tablesbinary string
+	ipv4face        map[string]string
+	ipv4nets        []*net.IPNet
+	ipv6ips         []string
+	ipv6nets        []*net.IPNet
+	ipslock         = new(sync.RWMutex)
 	//ipface  map[string]string
 )
 
@@ -31,25 +41,45 @@ func init() {
 		//panic(lookErr)
 		log.Println("cant find iptables!")
 	}
+	ip6tablesbinary, lookErr = exec.LookPath("ip6tables")
+	if lookErr != nil {
+		//panic(lookErr)
+		log.Println("cant find iptables!")
+	}
+	go cronUpdateIPs()
 }
 
-func getIpFaces() (map[string]string, []*net.IPNet) {
+func cronUpdateIPs() {
+	for {
+		updateIPs()
+		time.Sleep(10 * time.Minute)
+	}
+}
+
+func updateIPs() {
+	ipv4f := make(map[string]string, 0)
+	ipv4n := make([]*net.IPNet, 0)
+	ipv6 := make([]string, 0)
+	ipv6n := make([]*net.IPNet, 0)
+
 	cfg := g.Config()
+	if cfg == nil {
+		return
+	}
 	facelist, err := net.Interfaces()
 	if err != nil {
 		log.Println("ERROR: get interfaces!", err)
-		return nil, nil
+		return
 	}
 	if len(lanlist) == 0 {
 		if cfg.Collector == nil || cfg.Collector.LanIpnet == nil {
-			return nil, nil
+			return
 		}
 		lanstrs := cfg.Collector.LanIpnet
 		parseIPNets(&lanstrs, &lanlist)
 
 	}
-	ipFaces := make(map[string]string)
-	nets := make([]*net.IPNet, 0)
+
 	for _, iface := range facelist {
 		if (iface.Flags&net.FlagUp) == 0 || (iface.Flags&net.FlagLoopback) != 0 || (iface.Flags&net.FlagPointToPoint) != 0 {
 			continue
@@ -68,7 +98,12 @@ func getIpFaces() (map[string]string, []*net.IPNet) {
 				continue
 			}
 			ip := ipnet.IP
+			if !ip.IsGlobalUnicast() {
+				continue
+			}
 			if ip.To4() == nil {
+				ipv6 = append(ipv6, ip.String())
+				ipv6n = append(ipv6n, ipnet)
 				continue
 			}
 
@@ -79,14 +114,20 @@ func getIpFaces() (map[string]string, []*net.IPNet) {
 				}
 			}
 			if islan == false {
-				ipFaces[ip.String()] = iface.Name
-				nets = append(nets, ipnet)
+				ipv4f[ip.String()] = iface.Name
+				ipv4n = append(ipv4n, ipnet)
 
 			}
 
 		}
 	}
-	return ipFaces, nets
+	sort.Strings(ipv6)
+	ipslock.Lock()
+	defer ipslock.Unlock()
+	ipv4face = ipv4f
+	ipv4nets = ipv4n
+	ipv6ips = ipv6
+	ipv6nets = ipv6n
 }
 
 func parseIPNets(lanstrs *[]string, nw *[]net.IPNet) {
@@ -106,14 +147,6 @@ func parseIPNets(lanstrs *[]string, nw *[]net.IPNet) {
 	}
 	*nw = (nw1[:i])
 	return
-}
-
-func resetipt() {
-	cmdrt := exec.Command("/usr/local/bin/ipt_server.sh")
-	_, err := cmdrt.Output()
-	if err != nil {
-		log.Println("reset iptable error", err)
-	}
 }
 
 func ipchain(t string, ip string) string {
@@ -201,8 +234,10 @@ func getTraffic(ipt string) (wiv uint64, liv uint64, wov uint64, lov uint64, err
 func TrafficMetrics() (L []*model.MetricValue) {
 	interfaceMetrics := CoreInterfaceMetrics()
 	trafficeMetrics := CoreTrafficMetrics()
+	v6trafficeMetrics := CoreTraffic6()
 	L = append(L, interfaceMetrics...)
 	L = append(L, trafficeMetrics...)
+	L = append(L, v6trafficeMetrics...)
 	return L
 }
 
@@ -255,9 +290,12 @@ func convIpstrToIptChane(ipstr string) string {
 }
 
 func CoreTrafficMetrics() (L []*model.MetricValue) {
-	ipfs, nets := getIpFaces()
+	ipslock.RLock()
+	ipfs, nets := ipv4face, ipv4nets
+	ipslock.RUnlock()
 	if ipfs == nil || len(ipfs) == 0 {
 		log.Println("get faces error")
+		updateIPs()
 		return
 	}
 	myip, myipconf := g.ConfigIp()
@@ -277,6 +315,7 @@ func CoreTrafficMetrics() (L []*model.MetricValue) {
 		ifsub := strings.Split(iface, ".")
 		ifacetag := "iface=" + ifsub[0]
 		if err != nil {
+			//过滤同网段配置多个IP情况。
 			nip := net.ParseIP(ip)
 			cnt := 0
 			for k, n := range nets {
@@ -321,4 +360,77 @@ func CoreTrafficMetrics() (L []*model.MetricValue) {
 		}
 	}
 	return L
+}
+
+func getIp6tableTraiffic(in string) (out uint64, err error) {
+	if ip6tablesbinary == "" {
+		return 0, errors.New("cant find ip6tables!")
+	}
+
+	iout, err := CmdTimeout(1000, ip6tablesbinary, "-L", in, "1", "-vnx")
+	if err != nil {
+		return 0, errors.New(fmt.Sprintf("Exec  %s ip6table chain error %s", in, err.Error()))
+	}
+	fis := strings.Fields(iout)
+	if len(fis) <= 6 {
+		return 0, errors.New(fmt.Sprintf("read  %s ip6table output error %s", in, iout))
+	}
+	out, err = strconv.ParseUint(fis[1], 10, 64)
+	if err != nil {
+		return 0, errors.New(fmt.Sprintf("%s convert uint error %s", in, err.Error()))
+	}
+	return
+
+}
+
+func getTraffic6() (wiv uint64, wov uint64, err error) {
+
+	wov, err = getIp6tableTraiffic("out_ipv6")
+	if err != nil {
+		return 0, 0, err
+	}
+	wiv, err = getIp6tableTraiffic("in_ipv6")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return wiv, wov, nil
+
+}
+
+func CoreTraffic6() (L []*model.MetricValue) {
+	ipslock.RLock()
+	ips := ipv6ips
+	ipslock.RUnlock()
+	if len(ips) < 1 {
+		return
+	}
+
+	wi, wo, err := getTraffic6()
+	if err != nil {
+		pfc.Report("SWCLGetTraf6Err", ips[0])
+		log.Println("get taffic v6 falure. ", err)
+	}
+	ctime := time.Now().Unix()
+	iptag := "ip=" + ips[0]
+	ipvtage := "iface=ipv6"
+
+	conf := g.Config()
+	if !conf.Rate {
+		L = append(L, CounterValue("traffic.wan.in", wi, ipvtage, iptag))
+		L = append(L, CounterValue("traffic.wan.out", wo, ipvtage, iptag))
+	} else {
+
+		wir, ts, err := g.Rate(ips[0], "ipv6", "wi", wi, ctime)
+		if err == nil {
+			L = append(L, GaugeValueSliceTS("waninrate", ts, wir, ipvtage, iptag)...)
+		}
+		wor, ts, err := g.Rate(ips[0], "ipv6", "wo", wo, ctime)
+		if err == nil {
+			L = append(L, GaugeValueSliceTS("wanoutrate", ts, wor, ipvtage, iptag)...)
+		}
+
+	}
+	return L
+
 }

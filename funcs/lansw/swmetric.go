@@ -73,13 +73,15 @@ func initVariable() {
 	isdebug = conf.Debug
 	limitCh = make(chan bool, conf.Switch.LimitConcur)
 
-	chworkerLm = make(chan bool, 10)
-	allSwitchIps = AllSwitchIp()
+	allSwitchIps = AllSwitchIP()
 	lsema = nsema.NewSemaphore(conf.Switch.LimitConcur)
 	enableRate = conf.Rate
 }
 
 func contains(slice []string, item string) bool {
+	if len(slice) == 0 {
+		return false
+	}
 	sort.Strings(slice)
 	i := sort.Search(len(slice),
 		func(i int) bool { return slice[i] >= item })
@@ -89,25 +91,25 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
-func AllSwitchIp() (allIp []string) {
-	switchIp := g.Config().Switch.IpRange
+func AllSwitchIP() (allIP []string) {
+	switchIP := g.Config().Switch.IpRange
 
-	if len(switchIp) > 0 {
-		for _, sip := range switchIp {
+	if len(switchIP) > 0 {
+		for _, sip := range switchIP {
 			aip := sw.ParseIp(sip)
 			for _, ip := range aip {
-				allIp = append(allIp, ip)
+				allIP = append(allIP, ip)
 			}
 		}
 	}
 	if len(localSwList) > 0 {
 		for _, sip := range localSwList {
-			if !contains(allIp, sip) {
-				allIp = append(allIp, sip)
+			if !contains(allIP, sip) {
+				allIP = append(allIP, sip)
 			}
 		}
 	}
-	return allIp
+	return allIP
 }
 
 func InitIfstatsQ() {
@@ -130,22 +132,13 @@ func SwifMapChecker() {
 	log.Println("start SwifMapChecker!")
 
 	for {
-
-		if IsCollector {
-
+		if IsCollector.IsSet() {
 			if len(allSwitchIps) > 0 {
 				for _, ip := range allSwitchIps {
 					limitCh <- true
 					go coreSwIfMap(ip, limitCh)
 					time.Sleep(5 * time.Millisecond)
 				}
-
-			}
-
-			log.Println("Mapchecker end ", len(HightQueue), len(LowQueue), len(chworkerLm), len(allSwitchIps))
-
-			if len(chworkerLm) < 2 {
-				go CollectWorker()
 
 			}
 		}
@@ -179,6 +172,30 @@ func coreSwIfMap(ip string, limitch chan bool) {
 	<-limitch
 }
 
+func MapEq(olds, news map[string]string) (ischange bool, all map[string]string) {
+	ischange = false
+	all = make(map[string]string)
+	for k, v := range news {
+		all[k] = v
+	}
+	if len(olds) != len(all) {
+		ischange = true
+	}
+
+	for k, v := range olds {
+		w, ok := all[k]
+		if !ok {
+			all[k] = v
+			ischange = true
+		}
+		if v != w {
+			ischange = true
+		}
+	}
+
+	return ischange, all
+}
+
 func MapIfName(ip string) {
 	log.Println("MapIfName", ip)
 	defer func() {
@@ -193,65 +210,45 @@ func MapIfName(ip string) {
 
 	ifNameList := <-chIfNameList
 	if len(ifNameList) > 0 {
-
+		ifslist := make(map[string]string)
+		//列举交换机snmp oid,ifindex与 ifname 的对应关系
 		for _, ifNamePDU := range ifNameList {
-
 			ifName := ifNamePDU.Value.(string)
-
-			key := fmt.Sprintf("%s/%s", ip, ifName)
-			check := !CheckPortMap(key)
-			if !check {
-				continue
-			}
-			if len(ignoreIface) > 0 {
-				for _, ignore := range ignoreIface {
-					if strings.Contains(ifName, ignore) {
-						check = false
-						break
-					}
-				}
-			}
-			if !check {
-				continue
-			}
-
-			ifIndexStr := strings.Replace(ifNamePDU.Name, ifNameOidPrefix, "", 1)
-
-			it := &SnmpTask{
-				Key:       key,
-				Ip:        ip,
-				Ifindex:   ifIndexStr,
-				Ifname:    ifName,
-				NextTime:  time.Now(),
-				Interval:  interval,
-				IgnorePkt: ignorePkt,
-			}
-			it.PktsNextTime = it.NextTime
-			it.IsPriority = false
-			for _, hiface := range hightIface {
-				if strings.Contains(ifName, hiface) {
-					HightQueue <- it
-					it.IsPriority = true
+			isignore := false
+			for _, ignore := range ignoreIface {
+				if strings.HasPrefix(ifName, ignore) {
+					isignore = true
 					break
 				}
 			}
-			if it.IsPriority == false {
-				it.Interval = it.Interval
-				LowQueue <- it
+			if isignore {
+				continue
 			}
+			ifIndex := strings.Replace(ifNamePDU.Name, ifNameOidPrefix, "", 1)
+			ifslist[ifIndex] = ifName
+		}
 
-			var im PortMapItem
+		//构造任务
+		st := GetTaskMap(ip)
+		if st == nil {
+			//新增任务
+			st = new(SnmpTask)
+			st.IP = ip
+			st.Interval = interval
 
-			im = PortMapItem{
-				Key:      key,
-				ExpireAt: it.NextTime.Add(it.Interval),
-				Ip:       it.Ip,
-				Ifname:   it.Ifname,
-				Task:     it,
+			AddTask(st)
+			st.SetIfsList(ifslist)
+			log.Printf("add new st:%v\n", st)
+			st.Run()
+		} else {
+			//对比端口
+			oldifs := st.GetIfsList()
+			//TODO: 分辨交换机变革,修改对应端口对.(考虑每次 snmpwalk 结果不全.)更新对应 task 的 ifslist.
+			isChange, newifs := MapEq(oldifs, ifslist)
+			if isChange {
+				st.SetIfsList(newifs)
+				log.Printf("Find Switch Port Change:%v,%v\n", ip, ifslist)
 			}
-
-			AddPortMap(key, &im)
-
 		}
 	}
 }
@@ -261,7 +258,6 @@ func SWMetricToTransfer() {
 
 	for {
 		items := IfstatsQueue.PopBackBy(5000)
-
 		count := len(items)
 		if count == 0 {
 			time.Sleep(DefaultSendTaskSleepInterval)
@@ -277,19 +273,19 @@ func SWMetricToTransfer() {
 		sema.Acquire()
 		go func(mvsend []*model.MetricValue) {
 			defer sema.Release()
-			g.SendToTransfer(mvsend)
+			success := g.SendToTransfer(mvsend)
 			pfc.Meter("SWCLSwSend", int64(len(mvsend)))
 			log.Println("INFO : Send metrics to transfer running in the background. Send IfStats metrics :", len(mvsend))
+			if !success {
+				pfc.Meter("SWCLSwSendFails", int64(len(mvsend)))
+				log.Println("INFO : Send metrics to transfer running in the background. failed:", len(mvsend))
+			}
 		}(mvs)
 	}
 
 }
 
-func StartLanSWcollect() {
-
-	if len(chworkerLm) < 1 {
-		go CollectWorker()
-	}
+func StartSWcollectTask() {
 
 	for _, ip := range allSwitchIps {
 		limitCh <- true
@@ -297,8 +293,5 @@ func StartLanSWcollect() {
 		time.Sleep(5 * time.Millisecond)
 	}
 
-	log.Println("BeginIfstatcollet  ", len(HightQueue), len(LowQueue), len(chworkerLm), len(allSwitchIps))
-}
-func StopLanSWCollect() {
-	TurnOffPortMap()
+	log.Println("BeginIfstatcollet  ", len(allSwitchIps))
 }

@@ -3,196 +3,107 @@ package lansw
 import (
 	"log"
 	"sync"
+	"sync/atomic"
 	"time"
-)
 
-const (
-	TaskDefaultNums = 200
-	MaxTaskWorkers  = 2000
+	pfc "github.com/baishancloud/goperfcounter"
 )
-
 
 var (
-	HightQueue chan *SnmpTask
-	LowQueue   chan *SnmpTask
-	lock       = new(sync.RWMutex)
-	chworkerLm chan bool
-	GPortMap   map[string]*PortMapItem
+	TasksMap map[string]*SnmpTask
+	tmlock   = new(sync.RWMutex)
 )
 
-func AddPortMap(key string, im *PortMapItem) {
-	lock.Lock()
-	GPortMap[key] = im
-	lock.Unlock()
-}
-func DeletePortMap(key string) {
-	lock.Lock()
-	delete(GPortMap, key)
-	lock.Unlock()
-}
-
-func CheckPortMapTask(key string, t *SnmpTask) bool {
-	lock.RLock()
-	im, ex := GPortMap[key]
-	lock.RUnlock()
-	if ex {
-		if im.Task == t {
-			return true
-		}
-		return time.Now().After(im.ExpireAt)
-	}
-	return false
-}
-func UpdatePortMapTime(key string) {
-	lock.RLock()
-	im, ex := GPortMap[key]
-	lock.RUnlock()
-	if ex && im.Task != nil {
-		im.ExpireAt = im.Task.NextTime.Add(im.Task.Interval)
-	}
-}
-
-func TurnOffPortMap() {
-	ext := time.Now().Add(interval * time.Duration(3))
-	lock.RLock()
-	for _, i := range GPortMap {
-		i.ExpireAt = ext
-	}
-	lock.RUnlock()
-}
-
-func CheckPortMap(key string) bool {
-	lock.RLock()
-	im, ex := GPortMap[key]
-	lock.RUnlock()
-	if ex {
-		return time.Now().Before(im.ExpireAt)
-	}
-	return false
+type IfOids struct {
+	IfHCOutIn     []string
+	IfHCPktsOutIn []string
 }
 
 type SnmpTask struct {
-	Key          string
-	Ip           string
-	Ifindex      string
-	Ifname       string
-	Interval     time.Duration
-	CollectType  int
-	IgnorePkt    bool
-	IsPriority   bool
-	FalseTimes   int
-	NextTime     time.Time
-	PktsNextTime time.Time
+	IP       string
+	IfsList  map[string]string
+	IfsOids  map[string]IfOids
+	Interval time.Duration
+	runflag  int32
+	sync.RWMutex
 }
-type PortMapItem struct {
-	Key      string
-	ExpireAt time.Time
-	Ip       string
-	Ifname   string
-	Task     *SnmpTask
+
+func (st *SnmpTask) GetIfsList() map[string]string {
+	st.RLock()
+	defer st.RUnlock()
+	return st.IfsList
+}
+
+func (st *SnmpTask) GetIfsOids() map[string]IfOids {
+	st.RLock()
+	defer st.RUnlock()
+	return st.IfsOids
+}
+
+func (st *SnmpTask) SetIfsList(ifs map[string]string) {
+	st.Lock()
+	defer st.Unlock()
+	st.IfsList = ifs
+	oidsmap := make(map[string]IfOids)
+
+	for index, name := range ifs {
+		oids := IfOids{
+			IfHCOutIn:     []string{ifHCOutOid + index, ifHCInOid + index},
+			IfHCPktsOutIn: []string{ifHCOutPktsOid + index, ifHCInPktsOid + index, ifOutDiscardpktsOid + index, ifInDiscardpktsOid + index},
+		}
+		oidsmap[name] = oids
+	}
+	st.IfsOids = oidsmap
+
+}
+func (st *SnmpTask) SetRun() bool {
+	return atomic.CompareAndSwapInt32(&(st.runflag), 0, 1)
+}
+
+func (st *SnmpTask) Stop() {
+	atomic.StoreInt32(&(st.runflag), 0)
+}
+
+func (st *SnmpTask) Run() {
+	ticker := time.NewTicker(st.Interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			if !IsCollector.IsSet() {
+				continue
+			}
+			if st.SetRun() {
+				go func() {
+					result := handleSnmpTask(st)
+					if result == false {
+						log.Println("SnmpTask false Time", st.IP)
+						pfc.Report("SWitchSNMPFalse,ip="+st.IP, "switch("+st.IP+")SnmpGetAllFalse")
+					}
+					st.Stop()
+				}()
+
+			} else {
+				log.Println("SnmpTask Run Expired!", st.IP)
+				pfc.Report("SnmpSnmpExpired,ip="+st.IP, "switch("+st.IP+")SnmpGetExpired")
+			}
+		}
+	}
+
+}
+
+func GetTaskMap(ip string) *SnmpTask {
+	tmlock.RLock()
+	defer tmlock.RUnlock()
+	return TasksMap[ip]
+}
+
+func AddTask(st *SnmpTask) {
+	tmlock.Lock()
+	defer tmlock.Unlock()
+	TasksMap[st.IP] = st
 }
 
 func InitTask() {
-	HightQueue = make(chan *SnmpTask, TaskDefaultNums)
-	LowQueue = make(chan *SnmpTask, TaskDefaultNums*10)
-	GPortMap = make(map[string]*PortMapItem)
-
-}
-
-func CollectWorker() {
-	chworkerLm <- true
-	defer func() {
-		<-chworkerLm
-		if isdebug {
-			log.Println("CollectWorker End")
-		}
-	}()
-	if isdebug {
-		log.Println("CollectWorker start")
-	}
-	i := 0
-	var t, tl *SnmpTask
-	for {
-		if len(HightQueue) > 0 {
-			t = <-HightQueue
-		}
-		if t != nil && t.NextTime.Before(time.Now()) {
-			go checkAndRunTask(t)
-			t = nil
-			i = 0
-			continue
-		} else {
-			if t != nil {
-				HightQueue <- t
-				t = nil
-			}
-			if len(LowQueue) > 0 {
-				tl = <-LowQueue
-			}
-			if tl != nil && tl.NextTime.Before(time.Now()) {
-				go checkAndRunTask(tl)
-				tl = nil
-				i = 0
-				continue
-			} else {
-				if tl != nil {
-					LowQueue <- tl
-					tl = nil
-				}
-				i++
-				if i > (len(HightQueue)+len(LowQueue))/len(chworkerLm) {
-					if isdebug {
-						log.Println("Sleep,", len(HightQueue), len(LowQueue), len(chworkerLm))
-					}
-					time.Sleep(time.Second)
-				}
-			}
-		}
-
-	}
-}
-
-func checkAndRunTask(t *SnmpTask) {
-	if !CheckPortMapTask(t.Key, t) {
-		log.Println("cant run Task", t.Ip, t.Ifname)
-		return
-	}
-	if IsCollector {
-		if !t.IsPriority {
-			lsema.Acquire()
-			defer func() {
-				if !t.IsPriority {
-					lsema.Release()
-				}
-			}()
-		}
-		result := handleSnmpTask(t)
-		if result == false {
-			t.FalseTimes++
-			if t.FalseTimes > 13 {
-				DeletePortMap(t.Key)
-				return
-			}
-		} else {
-			t.FalseTimes = 0
-		}
-		if isdebug {
-			log.Println(t.Ip, t.Ifname, "run result:", result, t.FalseTimes, t.Interval)
-		}
-	} else {
-		log.Println("im not collector ,cant run Task", t.Ip, t.Ifname)
-	}
-	dt := t.Interval - time.Second
-	if !t.IsPriority && t.FalseTimes > 2 {
-		dt = time.Duration(t.FalseTimes-2)*t.Interval - time.Second
-	}
-	t.NextTime = time.Now().Add(dt)
-	UpdatePortMapTime(t.Key)
-
-	if t.IsPriority {
-		HightQueue <- t
-	} else {
-		LowQueue <- t
-	}
-
+	TasksMap = make(map[string]*SnmpTask)
 }

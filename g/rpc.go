@@ -45,10 +45,10 @@ func (this *SingleConnRpcClient) insureConn() error {
 
 		log.Printf("dial %s fail: %v", this.RpcServer, err)
 
-		if retry > 4 {
+		retry++
+		if retry > 3 {
 			return err
 		}
-		retry++
 		time.Sleep(time.Duration(math.Pow(2.0, float64(retry))) * time.Second)
 
 	}
@@ -64,7 +64,7 @@ func (this *SingleConnRpcClient) Call(method string, args interface{}, reply int
 		return errors.New("Rpc dial error :" + err.Error())
 	}
 
-	timeout := time.Duration(50 * time.Second)
+	timeout := time.Duration(10 * time.Second)
 	done := make(chan error)
 
 	go func() {

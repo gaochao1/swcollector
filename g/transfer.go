@@ -77,8 +77,8 @@ func GetHost() {
 	IPlock.Unlock()
 }
 
-func SendMetrics(metrics []*model.MetricValue, resp *model.TransferResponse) {
-
+func SendMetrics(metrics []*model.MetricValue, resp *model.TransferResponse) (success bool) {
+	success = false
 	rand.Seed(time.Now().UnixNano())
 
 	LookupCount += 1
@@ -102,6 +102,7 @@ func SendMetrics(metrics []*model.MetricValue, resp *model.TransferResponse) {
 		}
 
 		if updateMetrics(addr, metrics, resp) {
+			success = true
 			break
 		} else {
 			FailTimes[idx] += 1
@@ -124,6 +125,7 @@ func SendMetrics(metrics []*model.MetricValue, resp *model.TransferResponse) {
 			}
 		}
 	}
+	return
 }
 
 func initTransferClient(addr string) {
