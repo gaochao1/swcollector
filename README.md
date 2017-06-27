@@ -27,6 +27,8 @@
 * IfOutErros
 * IfInUnknownProtos
 * IfOutQLen
+* IfSpeed
+* IfSpeedPercent 
 * IfOperStatus(接口状态，1 up, 2 down, 3 testing, 4 unknown, 5 dormant, 6 notPresent, 7 lowerLayerDown)
 	
 
@@ -82,37 +84,53 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 ```
 {
     "debug": true,
-	"debugmetric":{                   # 在日志中 debug 具体的指标
-		"endpoints":["192.168.56.101","192.168.56.102"],  # 必填
-		"metrics":["switch.if.In","switch.if.Out"],      # 必填
-		"tags":"ifName=Fa0/1"         # 有则匹配 tag,如为 "" 则打印该 metric 的全部信息
+	"debugmetric":{                                          # 在日志中 debug 具体的指标
+		"endpoints":["192.168.56.101","192.168.56.102"],     # 必填
+		"metrics":["switch.if.In","switch.if.Out"],          # 必填
+		"tags":"ifName=Fa0/1"  # 有则匹配 tag,如为 "" 则打印该 metric 的全部信息
 	},
 	"switch":{
-	   "enabled": true,				#交换机IP地址段，对该网段有效IP，先发Ping包探测，对存活IP发SNMP请求
-		"ipRange":[
+	   "enabled": true,
+		"ipRange":[            #交换机IP地址段，对该网段有效IP，先发Ping包探测，对存活IP发SNMP请求
             "192.168.56.101/32",      
-            "192.168.56.102/32",
+            "192.168.56.102-192.168.56.120",#现在支持这样的配置方式，对区域内的ip进行ping探测，对存活ip发起snmp请求。
             "172.16.114.233" 
  		],
-		"gosnmp":true,              #是否使用 gosnmp 采集, false 则使用 snmpwalk
- 		"pingTimeout":300,          #Ping超时时间，单位毫秒
-		"pingRetry":4,				#Ping探测重试次数
-		"community":"public",		#SNMP认证字符串
-		"snmpTimeout":1000,			#SNMP超时时间，单位毫秒
-		"snmpRetry":5,				#SNMP重试次数
-		"ignoreIface": ["Nu","NU","Vlan","Vl"],	#忽略的接口，如Nu匹配ifName为*Nu*的接口
-		"ignorePkt": true,			#不采集IfHCInUcastPkts和IfHCOutUcastPkts
-		"ignoreBroadcastPkt": true,	#不采集IfHCInBroadcastPkts和IfHCOutBroadcastPkts
-		"ignoreMulticastPkt": true,	#不采集IfHCInMulticastPkts和IfHCOutMulticastPkts
-		"ignoreDiscards": true,		#不采集IfInDiscards和IfOutDiscardss
-		"ignoreErrors": true,		#不采集IfInErrors和IfOutErros
-		"ignoreOperStatus": true,   #不采集IfOperStatus
-		"ignoreUnknownProtos":true, #不采集IfInUnknownProtos
-		"ignoreOutQLen":true,       #不采集IfOutQLen
-		"displayByBit": true,       #true时，上报的流量单位为bit，为false则单位为byte。
-		"fastPingMode": false,		#是否开启 fastPing 模式，开启 Ping 的效率更高，并能解决高并发时，会有小概率 ping 通宕机的交换机地址的情况。但 fastPing 可能被防火墙过滤。 
-		"limitConcur": 1000			#限制并发数
+		"gosnmp":true,         #是否使用 gosnmp 采集, false 则使用 snmpwalk
+ 		"pingTimeout":300,     #Ping超时时间，单位毫秒
+		"pingRetry":4,         #Ping探测重试次数
+		"community":"public",  #SNMP认证字符串
+		"snmpTimeout":1000,    #SNMP超时时间，单位毫秒
+		"snmpRetry":5,         #SNMP重试次数
+		"ignoreIface": ["Nu","NU","Vlan","Vl"], #忽略的接口，如Nu匹配ifName为*Nu*的接口
+		"ignoreOperStatus": true,               #不采集IfOperStatus
+		"speedlimit":0,  #流量的上限，如果采集计算出的流量超过这个数值，则抛弃不上报。如果填0，则以接口的速率（ifSpeed)作为上限计算。注意 interface vlan 这样的虚接口是没有 ifSpeed 的，因此不进行最大值的比较。
+		"ignorePkt": true,                      #不采集IfHCInUcastPkts和IfHCOutUcastPkts
+		"pktlimit": 0,  #pkt的上限，如果采集计算出的包速率超过这个数值，则抛弃不上报。如果填0，则不进行最大值比较。
+		"ignoreBroadcastPkt": true,  #不采集IfHCInBroadcastPkts和IfHCOutBroadcastPkts
+		"broadcastPktlimit": 0,  #broadcastPkt的上限，如果采集计算出的包速率超过这个数值，则抛弃不上报。如果填0，则不进行最大值比较。
+		"ignoreMulticastPkt": true,  #不采集IfHCInMulticastPkts和IfHCOutMulticastPkts
+		"multicastPktlimit": 0,  #multicastPkt的上限，如果采集计算出的包速率超过这个数值，则抛弃不上报。如果填0，则不进行最大值比较。
+		"ignoreDiscards": true,   #不采集IfInDiscards和IfOutDiscards
+		"discardsPktlimit": 0,   #discardsPkt的上限，如果采集计算出的包速率超过这个数值，则抛弃不上报。如果填0，则不进行最大值比较。
+		"ignoreErrors": true,   #不采集IfInErrors和IfOutErros
+		"errorsPktlimit": 0,    #errorsPkt的上限，如果采集计算出的包速率超过这个数值，则抛弃不上报。如果填0，则不进行最大值比较。
+		"ignoreUnknownProtos":true,    #不采集IfInUnknownProtos
+		"unknownProtosPktlimit": 0,    #unknownProtosPkt的上限，如果采集计算出的包速率超过这个数值，则抛弃不上报。如果填0，则不进行最大值比较。
+		"ignoreOutQLen":true,    #不采集IfOutQLen
+		"outQLenPktlimit": 0,   #outQLenPkt的上限，如果采集计算出的包速率超过这个数值，则抛弃不上报。如果填0，则不进行最大值比较。
+		"fastPingMode": true,  
+		"limitConcur": 1000, #交换机采集的并发限制
+		"limitCon": 4 #对于单台交换机上，多个指标采集的并发限制
  	}, 
+	"switchhosts":{
+		"enabled":true,
+		"hosts":"./hosts.json"  #自定义的host与Ip地址对应表，如果配置，则上报时会用这里的host替换ip地址
+	},
+	"customMetrics":{         
+		"enabled":true,
+		"template":"./custom.json"    #自定义的metric列表，如果配置，会根据这个配置文件，采集额外的自定义metric
+	},
     "transfer": {
         "enabled": true,
         "addr": "127.0.0.1:8433",
@@ -124,6 +142,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
         "listen": ":1989"
     }
 }
+
 ```
 
 ##部署说明
@@ -133,7 +152,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 2016/08/16 21:31:24 swifstat.go:121: IP: 192.168.10.1 PingResult: true len_list: 440 UsedTime: 5
 2016/08/16 21:31:24 swifstat.go:121: IP: 192.168.10.252 PingResult: true len_list: 97 UsedTime: 2
 2016/08/16 21:31:24 swifstat.go:121: IP: 192.168.13.1 PingResult: true len_list: 24 UsedTime: 1
-2016/08/16 21:31:24 swifstat.go:121: IP: 192.1680.14.1 PingResult: true len_list: 23 UsedTime: 1
+2016/08/16 21:31:24 swifstat.go:121: IP: 192.168.14.1 PingResult: true len_list: 23 UsedTime: 1
 2016/08/16 21:31:24 swifstat.go:121: IP: 192.168.23.1 PingResult: true len_list: 61 UsedTime: 2
 2016/08/16 21:31:24 swifstat.go:121: IP: 192.168.12.1 PingResult: true len_list: 55 UsedTime: 1
 2016/08/16 21:31:24 swifstat.go:121: IP: 192.168.12.5 PingResult: true len_list: 26 UsedTime: 2
