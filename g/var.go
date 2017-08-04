@@ -82,6 +82,11 @@ func SendToTransfer(metrics []*model.MetricValue) {
 	err := TransferClient.Call("Transfer.Update", metrics, &resp)
 	if err != nil {
 		log.Println("call Transfer.Update fail", err)
+		if debug {
+			for _, metric := range metrics {
+				log.Printf("=> <Total=%d> %v\n", len(metrics), metric)
+			}
+		}
 	}
 
 	if debug {

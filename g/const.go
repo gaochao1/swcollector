@@ -19,6 +19,6 @@ import (
 // 4.0.4 add lock on map;add limconn for switch snmp request
 // 4.0.5 add custom metric,custom host
 const (
-	VERSION          = "4.0.5"
+	VERSION          = "4.0.6"
 	COLLECT_INTERVAL = time.Second
 )

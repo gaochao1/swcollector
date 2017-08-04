@@ -1,18 +1,25 @@
 # Changelog #
-## 4.0.2 ##
+## 4.0.6 ##
 #### 新功能 ####
 1. 增加接口速率的采集
 	* switch.if.Speed
 2. 增加接口流量百分比的采集
 	* switch.if.InSpeedPercent
 	* switch.if.OutSpeedPercent
-	
+3. 增加 dell 交换机的内置 cpu/mem 采集
+4. 现在支持自定义 oid 的采集了
+5. 现在支持自定义交换机 host，以 host 作为 endpoint 上报
+6. 现在支持地址段的方式配置采集列表，例如 ```"192.168.56.102-192.168.56.120"```
+ 
 #### 改进 ####
 1. Counter 类型的数据上报逻辑大幅更改。现在 swcollector 将在本地计算出相应的数值，再以 Gauge 类型上报。如果出现异常的数据，则在本地直接抛弃。因此最终呈现的绘图至多只会出现断点，而不再会出现极端的异常图形。
-2. 优化了 gosnmp 的端口采集，现在 gosnmp 端口采集的超时情况应该大幅度降低了
+2. 优化了 gosnmp 的端口采集，现在 gosnmp 端口采集异常的超时情况应该大幅度降低了
+3. 现在如果并发采集的某个 goroutine 的耗时超过了采集周期，则该 goroutine 会超时退出，避免异常时大量 goroutine 耗尽资源
+4. 移除了对 Cisco_ASA 的防火墙连接数内置采集，此类需求今后可通过自定义 oid 方式采集。
 
 #### bug修复 ####
 1. 现在当 cpu 和 mem 采集异常的时候，应该能正确的抛弃。而不是上报一个 0 了
+
 
 ## 3.2.1.1 ##
 1. debugmetric 现在支持配置多个 endpoint 和 metric 了

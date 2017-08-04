@@ -9,7 +9,7 @@
 	"switch":{
 	   "enabled": true,
 		"ipRange":[
-            "10.10..88.168"      
+            "10.10.88.168"      
  		],
 		"gosnmp":true,
  		"pingTimeout":300,

@@ -10,10 +10,11 @@ import (
 )
 
 type MetricConfig struct {
-	Metric string `json:metric`
-	Tag    string `json:tag`
-	Type   string `json:type`
-	Oid    string `json:oid`
+	IpRange []string `json:"ipRange"`
+	Metric  string   `json:metric`
+	Tag     string   `json:tag`
+	Type    string   `json:type`
+	Oid     string   `json:oid`
 }
 type CustomConfig struct {
 	Metrics []*MetricConfig `json:"metrics`

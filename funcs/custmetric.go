@@ -4,11 +4,11 @@ import (
 	"errors"
 	"log"
 
-	"time"
-
+	go_snmp "github.com/gaochao1/gosnmp"
 	"github.com/gaochao1/sw"
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
+	"time"
 )
 
 type CustM struct {
@@ -22,12 +22,43 @@ type CustmMetric struct {
 	metrictype string
 }
 
+func InArray(str string, array []string) bool {
+	for _, s := range array {
+		if str == s {
+			return true
+		}
+	}
+	return false
+}
+
+func AllCustmIp(ipRange []string) (allIp []string) {
+	if len(ipRange) > 0 {
+		for _, sip := range ipRange {
+			aip := sw.ParseIp(sip)
+			for _, ip := range aip {
+				allIp = append(allIp, ip)
+			}
+		}
+	}
+	return allIp
+}
+
 func CustMetrics() (L []*model.MetricValue) {
-	chs := make([]chan CustM, len(AliveIp))
-	for i, ip := range AliveIp {
+	if !g.Config().CustomMetrics.Enabled {
+		return
+	}
+	chs := make([]chan CustM, 0)
+	for _, ip := range AliveIp {
 		if ip != "" {
-			chs[i] = make(chan CustM)
-			go custMetrics(ip, chs[i])
+			chss := make(chan CustM)
+			for _, metric := range g.CustConfig().Metrics {
+				CustmIps := AllCustmIp(metric.IpRange)
+				if InArray(ip, CustmIps) {
+					go custMetrics(ip, metric, chss)
+					chs = append(chs, chss)
+				}
+			}
+
 		}
 	}
 	for _, ch := range chs {
@@ -47,23 +78,24 @@ func CustMetrics() (L []*model.MetricValue) {
 	return L
 }
 
-func custMetrics(ip string, ch chan CustM) {
+func custMetrics(ip string, metric *g.MetricConfig, ch chan CustM) {
 	var custm CustM
 	var custmmetric CustmMetric
 	var custmmetrics []CustmMetric
 
-	for _, metric := range g.CustConfig().Metrics {
-		value, err := GetCustMetric(ip, g.Config().Switch.Community, metric.Oid, g.Config().Switch.SnmpTimeout, g.Config().Switch.SnmpRetry)
-		if err != nil {
-			log.Println(err)
-		} else {
-			custmmetric.metric = metric.Metric
-			custmmetric.metrictype = metric.Type
-			custmmetric.tag = metric.Tag
-			custmmetric.value = value
-			custmmetrics = append(custmmetrics, custmmetric)
-		}
+	value, err := GetCustMetric(ip, g.Config().Switch.Community, metric.Oid, g.Config().Switch.SnmpTimeout, g.Config().Switch.SnmpRetry)
+	if err != nil {
+		log.Println(ip, metric.Oid, err)
+		close(ch)
+		return
+	} else {
+		custmmetric.metric = metric.Metric
+		custmmetric.metrictype = metric.Type
+		custmmetric.tag = metric.Tag
+		custmmetric.value = value
+		custmmetrics = append(custmmetrics, custmmetric)
 	}
+
 	custm.Ip = ip
 	custm.custmMetrics = custmmetrics
 	ch <- custm
@@ -79,15 +111,15 @@ func GetCustMetric(ip, community, oid string, timeout, retry int) (float64, erro
 	method := "get"
 	var value float64
 	var err error
+	var snmpPDUs []go_snmp.SnmpPDU
 	for i := 0; i < retry; i++ {
-		snmpPDUs, err := sw.RunSnmp(ip, community, oid, method, timeout)
+		snmpPDUs, err = sw.RunSnmp(ip, community, oid, method, timeout)
 		if len(snmpPDUs) > 0 && err == nil {
 			value, err = interfaceTofloat64(snmpPDUs[0].Value)
 			break
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-
 	return value, err
 }
 
