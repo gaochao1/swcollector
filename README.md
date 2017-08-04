@@ -1,4 +1,5 @@
 
+## Swcollector
 
 基于小米运维开源的[open-falcon](http://open-falcon.com)，交换机专用agent。
 
@@ -6,7 +7,7 @@
 
 感谢[来炜](https://github.com/laiwei)的宝贵建议。
 
-##简介
+#### 简介
 采集的metric列表：
 
 * CPU利用率
@@ -51,10 +52,10 @@ CPU和内存的OID私有，根据设备厂家和OS版本可能不同。目前测
 * H3C(Version 7)
 * DELL
 
-##二进制安装
+#### 二进制安装
 从[这里](https://github.com/gaochao1/swcollector/releases) 下载编译好的最新二进制版本即可。注意：这些二进制只能跑在64位Linux上
 
-##源码安装
+#### 源码安装
 ```
 	依赖$GOPATH/src/github.com/gaochao1/sw
 	cd $GOPATH/src/github.com/gaochao1/swcollector
@@ -69,7 +70,7 @@ CPU和内存的OID私有，根据设备厂家和OS版本可能不同。目前测
 	git pull
 ```
 
-##部署说明
+#### 部署说明
 
 swcollector需要部署到有交换机SNMP访问权限的服务器上。
 
@@ -77,7 +78,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 
 支持使用 Gosnmp 或 snmpwalk 进行数据采集，如果使用 snmpwalk 模式，需要在监控探针服务器上安装个snmpwalk命令
 
-##配置说明
+#### 配置说明
 
 配置文件请参照cfg.example.json，修改该文件名为cfg.json，将该文件里的IP换成实际使用的IP。
 
@@ -199,7 +200,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 }
 ```
 
-##部署说明
+#### 部署说明
 由于是并发采集，因此每个周期的采集耗时，主要取决于被采集的交换机中，最慢的那个。
 因此我们可以在 debug 模式下观察每个交换机的采集耗时。
 ```
@@ -239,7 +240,7 @@ snmp 报文的响应需要消耗 cpu，因此交换机多少都对 snmp 报文�
 
 如此，在我们调节了 *“木桶” *中 *“木板”* 的长度后，选择了合适的采集周期后，swcollector 的单个实例可以很轻松的带起上百台乃至更多的交换机。
 
-## v3-v4 升级说明（重要！！！！）
+#### v3-v4 升级说明（重要！！！！）
 由于 v4 版本的 swcollector 修改了接口数据的上报格式，从Counter修改为GAUGE。因此如果同一个 endpoint，使用升级后的 swcollector 采集时，graph 内原有数据会**全部丢失！**
 因此建议在升级时，开启自定义 host 功能，将交换机的 ip 地址通过 host 自定义为新的 endpoint，例如原先采集的 ip 为
 ```
