@@ -13,7 +13,6 @@
 * CPU利用率
 * 内存利用率
 * Ping延时（正常返回延时，超时返回 -1，可以用于存活告警）
-* 网络连接数（监控防火墙时，目前仅支持Cisco ASA)
 * IfHCInOctets
 * IfHCOutOctets
 * IfHCInUcastPkts
