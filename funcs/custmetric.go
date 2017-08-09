@@ -4,11 +4,12 @@ import (
 	"errors"
 	"log"
 
+	"time"
+
 	go_snmp "github.com/gaochao1/gosnmp"
 	"github.com/gaochao1/sw"
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
-	"time"
 )
 
 type CustM struct {
@@ -64,7 +65,7 @@ func CustMetrics() (L []*model.MetricValue) {
 	for _, ch := range chs {
 		custm := <-ch
 		for _, custmmetric := range custm.custmMetrics {
-			if custmmetric.metrictype == "GUAGE" {
+			if custmmetric.metrictype == "GAUGE" {
 				L = append(L, GaugeValueIp(time.Now().Unix(), custm.Ip, custmmetric.metric, custmmetric.value, custmmetric.tag))
 			}
 			if custmmetric.metrictype == "COUNTER" {

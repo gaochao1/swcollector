@@ -447,6 +447,7 @@ func coreSwIfMetrics(ip string, ch chan ChIfStat, limitCh chan bool) {
 
 		if err != nil {
 			log.Printf(ip, err)
+			close(ch)
 		}
 
 		if len(ifList) > 0 {
