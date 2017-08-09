@@ -170,7 +170,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
  			],
 			"metric":"switch.AnyconnectSession", #自定义的 metric
 			"tag":"",          #自定义的 tag
-			"type":"GUAGE",
+			"type":"GAUGE",
 			"oid":"1.3.6.1.4.1.9.9.392.1.3.35.0" #自定义的 oid
 			},
 			#自定义的 oid 只支持 snmp get 方式采集，因此务必填写完整，建议先通过 snmpwalk 验证一下。
@@ -181,7 +181,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
  			],
 			"metric":"switch.ConnectionStat",
 			"tag":"",
-			"type":"GUAGE",
+			"type":"GAUGE",
 			"oid":"1.3.6.1.4.1.9.9.147.1.2.2.2.1.5.40.6"
 			},
 			#这是 cisco asa 上的防火墙连接数
@@ -191,7 +191,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
  			],
 			"metric":"switch.TempStatus",
 			"tag":"",
-			"type":"GUAGE",
+			"type":"GAUGE",
 			"oid":"1.3.6.1.4.1.9.9.13.1.3.1.3.1004"
 			}
 			#这是 cisco 交换机的温度，注意通用的 oid 是 "1.3.6.1.4.1.9.9.13.1.3.1.3"，这里 1004 是硬件 index。框式交换机可能会有多个温度（多块线卡），请根据实际需要填具体的 oid 值和相应的 tag
