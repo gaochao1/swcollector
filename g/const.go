@@ -12,7 +12,13 @@ import (
 // 3.2.0: more sw support, fix ping bug, add ifOperStatus,ifBroadcastPkt,ifMulticastPkt
 // 3.2.1 add Discards,Error,UnknownProtos,QLen，fix some bugs
 // 3.2.1.1 debugmetric support multi endpoints and metrics
+// 3.2.1.2 gosnmp use getnext to walk snmp
+// 4.0.0 caculate counter type on swcollect local,add speedpercent
+// 4.0.1 fix sometimes ifstat pannic
+// 4.0.2 fix speedpercent bug
+// 4.0.4 add lock on map;add limconn for switch snmp request
+// 4.0.5 add custom metric,custom host
 const (
-	VERSION          = "3.2.1.1"
+	VERSION          = "4.0.6"
 	COLLECT_INTERVAL = time.Second
 )

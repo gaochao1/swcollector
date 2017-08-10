@@ -1,11 +1,12 @@
 package funcs
 
 import (
+	"log"
+	"time"
+
 	"github.com/gaochao1/sw"
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
-	"log"
-	"time"
 )
 
 type SwMem struct {
@@ -37,6 +38,8 @@ func memMetrics(ip string, ch chan SwMem) {
 	memUtili, err := sw.MemUtilization(ip, g.Config().Switch.Community, g.Config().Switch.SnmpTimeout, g.Config().Switch.SnmpRetry)
 	if err != nil {
 		log.Println(err)
+		close(ch)
+		return
 	}
 
 	swMem.Ip = ip
