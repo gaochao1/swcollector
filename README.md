@@ -135,7 +135,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
     "transfer": {
         "enabled": true,
         "addr": "127.0.0.1:8433",
-        "interval": 60,
+        "interval": 300,
         "timeout": 1000
     },
     "http": {
