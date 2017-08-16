@@ -148,7 +148,10 @@ func swIfMetrics() (L []*model.MetricValue) {
 	}
 	for i, ch := range chs {
 		select {
-		case chIfStat := <-ch:
+		case chIfStat, ok := <-ch:
+			if !ok {
+				continue
+			}
 
 			if chIfStat.PingResult == true && !slice.ContainsString(AliveIp, chIfStat.Ip) {
 				AliveIp = append(AliveIp, chIfStat.Ip)

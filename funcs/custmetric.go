@@ -63,7 +63,10 @@ func CustMetrics() (L []*model.MetricValue) {
 		}
 	}
 	for _, ch := range chs {
-		custm := <-ch
+		custm, ok := <-ch
+		if !ok {
+			continue
+		}
 		for _, custmmetric := range custm.custmMetrics {
 			if custmmetric.metrictype == "GAUGE" {
 				L = append(L, GaugeValueIp(time.Now().Unix(), custm.Ip, custmmetric.metric, custmmetric.value, custmmetric.tag))

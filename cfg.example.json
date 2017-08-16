@@ -1,6 +1,5 @@
 {
-    "debug": true,
-	"lowermetrics": true,
+    "debug": false,
 	"debugmetric":{
 		"endpoints":["vpn-lw"],
 		"metrics":["AnyconnectSession","ConnectionStat"],
@@ -39,11 +38,11 @@
 		"limitCon": 4
  	}, 
 	"switchhosts":{
-		"enabled":true,
+		"enabled":false,
 		"hosts":"./hosts.json"
 	},
 	"customMetrics":{
-		"enabled":true,
+		"enabled":false,
 		"template":"./custom.json"
 	},
     "transfer": {
@@ -53,7 +52,7 @@
         "timeout": 1000
     },
     "http": {
-        "enabled": true,
+        "enabled": false,
         "listen": ":1989"
     }
 }
