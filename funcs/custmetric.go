@@ -3,6 +3,7 @@ package funcs
 import (
 	"errors"
 	"log"
+	"strconv"
 
 	"time"
 
@@ -154,8 +155,15 @@ func interfaceTofloat64(v interface{}) (float64, error) {
 		return float64(value), nil
 	case float64:
 		return value, nil
+	case string:
+		value_parsed, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return 0, err
+		} else {
+			return value_parsed, nil
+		}
 	default:
-		err = errors.New("value is not digital")
+		err = errors.New("value cannot not Parse to digital")
 		return 0, err
 	}
 }

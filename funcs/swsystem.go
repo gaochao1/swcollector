@@ -1,9 +1,10 @@
 package funcs
 
 import (
+	"log"
+
 	"github.com/gaochao1/sw"
 	"github.com/gaochao1/swcollector/g"
-	"log"
 )
 
 type SwSystem struct {
@@ -71,7 +72,7 @@ func swSystemInfo(ip string, ch chan SwSystem) {
 				swSystem.Mem = memUtili
 			}
 
-			swModel, err := sw.SysModel(ip, g.Config().Switch.Community, timeout)
+			swModel, err := sw.SysModel(ip, g.Config().Switch.Community, timeout, 1)
 			if err != nil {
 				log.Println(err)
 			} else {

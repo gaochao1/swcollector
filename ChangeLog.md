@@ -1,4 +1,14 @@
 # Changelog #
+## 4.0.6.2 ##
+#### 新功能 ####
+1. 增加了动态重载配置的功能，详见 [README](https://github.com/gaochao1/swcollector/blob/master/README.md})
+#### bug修复 ####
+1. 现在当 tag 为空时，debug 的时候应该不会重复的打印日志了
+#### 改进 ####
+1. 现在自定义 Oid 采集时，可以支持 string 类型的返回了。系统会强制转换成 float64 上报，如果转换出错则抛出错误
+2. 现在对交换机类型的判断时，也会采取重试（由配置中的 retry 决定重试次数）来规避偶发性的异常了。
+
+
 ## 4.0.6.1 ##
 #### bug修复 ####
 1. 现在当采集异常 Channel 关闭时，应该会正常的抛弃而不会给 transfer 上报一个空的 endpoint 了

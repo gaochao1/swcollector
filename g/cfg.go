@@ -48,13 +48,6 @@ type SwitchConfig struct {
 	FastPingMode          bool     `json:"fastPingMode"`
 }
 
-type HeartbeatConfig struct {
-	Enabled  bool   `json:"enabled"`
-	Addr     string `json:"addr"`
-	Interval int    `json:"interval"`
-	Timeout  int    `json:"timeout"`
-}
-
 type TransferConfig struct {
 	Enabled  bool   `json:"enabled"`
 	Addr     string `json:"addr"`
@@ -63,8 +56,9 @@ type TransferConfig struct {
 }
 
 type HttpConfig struct {
-	Enabled bool   `json:"enabled"`
-	Listen  string `json:"listen"`
+	Enabled  bool     `json:"enabled"`
+	Listen   string   `json:"listen"`
+	TrustIps []string `json:trustIps`
 }
 
 type SwitchHostsConfig struct {
@@ -81,7 +75,6 @@ type GlobalConfig struct {
 	Debug         bool                 `json:"debug"`
 	Debugmetric   *DebugmetricConfig   `json:"debugmetric`
 	Switch        *SwitchConfig        `json:"switch"`
-	Heartbeat     *HeartbeatConfig     `json:"heartbeat"`
 	Transfer      *TransferConfig      `json:"transfer"`
 	SwitchHosts   *SwitchHostsConfig   `json:switchhosts`
 	CustomMetrics *CustomMetricsConfig `json:customMetrics`

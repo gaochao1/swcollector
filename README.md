@@ -125,11 +125,11 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 		"limitCon": 4 #对于单台交换机上，多个指标采集的并发限制
  	}, 
 	"switchhosts":{
-		"enabled":true,
+		"enabled":false,
 		"hosts":"./hosts.json"  #自定义的host与Ip地址对应表，如果配置，则上报时会用这里的host替换ip地址
 	},
 	"customMetrics":{         
-		"enabled":true,
+		"enabled":false,
 		"template":"./custom.json"    #自定义的metric列表，如果配置，会根据这个配置文件，采集额外的自定义metric
 	},
     "transfer": {
@@ -139,8 +139,9 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
         "timeout": 1000
     },
     "http": {
-        "enabled": true,
-        "listen": ":1989"
+        "enabled": false,
+        "listen": ":1989",
+        "trustIps":["192.168.0.1","192.168.0.2"]
     }
 }
 
@@ -197,6 +198,28 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 			#这是 cisco 交换机的温度，注意通用的 oid 是 "1.3.6.1.4.1.9.9.13.1.3.1.3"，这里 1004 是硬件 index。框式交换机可能会有多个温度（多块线卡），请根据实际需要填具体的 oid 值和相应的 tag
 		]
 }
+```
+
+#### 配置的热重载
+4.0.6.2 版本起，支持配置的热重载。修改配置后无需重启 swcollector 了。
+开启配置热重载需要开启 swcollector 的 http 模块。然后使用以下接口重载配置。
+```
+# curl http://127.0.0.1:1990/config/reload
+```
+注意对于 transfer 的 interval 修改，热重载无效，还是需要重启 swcollector
+
+同时也可以使用下列接口来查看 swcollector 的相关信息（类似于 Open-Falcon 的官方的 agent)
+```
+# curl http://127.0.0.1:1990/ips
+查看当前 trustIp 的列表
+# curl http://127.0.0.1:1990/workdir
+查看当前的工作目录
+# curl http://127.0.0.1:1990/exit
+远程退出进程
+# curl http://127.0.0.1:1990/health
+查看当前状态
+# curl http://127.0.0.1:1990/version
+查看当前版本
 ```
 
 #### 部署说明
