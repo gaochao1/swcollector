@@ -353,27 +353,26 @@ func swIfMetrics() (L []*model.MetricValue) {
 								}
 								IfHCInOctets := 8 * (float64(ifStat.IfHCInOctets) - float64(lastifStat.IfHCInOctets)) / float64(interval)
 								IfHCOutOctets := 8 * (float64(ifStat.IfHCOutOctets) - float64(lastifStat.IfHCOutOctets)) / float64(interval)
-								if limitCheck(IfHCInOctets, speedlimit) {
+								if limitCheck(IfHCInOctets, speedlimit) && speedlimit > 0 {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.In", IfHCInOctets, ifNameTag, ifIndexTag))
-									if speedlimit > 0 {
-										InSpeedPercent := 100 * IfHCInOctets / float64(ifStat.IfSpeed)
-										L = append(L, GaugeValueIp(ts, ip, "switch.if.InSpeedPercent", InSpeedPercent, ifNameTag, ifIndexTag))
-									}
+									InSpeedPercent := 100 * IfHCInOctets / float64(ifStat.IfSpeed)
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.InSpeedPercent", InSpeedPercent, ifNameTag, ifIndexTag))
 								} else {
-									log.Println(ip, ifNameTag, "switch.if.In ", "out of range, value is ", IfHCInOctets)
-									log.Println("IfHCInOctets This Time: ", ifStat.IfHCInOctets)
-									log.Println("IfHCInOctets Last Time: ", lastifStat.IfHCInOctets)
+									log.Printf("%s, %s switch.if.In out of range, value is %d", ip, ifNameTag, IfHCInOctets)
+									log.Printf("%s, %s switch.If.Speed: %d", ip, ifNameTag, speedlimit)
+									log.Printf("%s, %s IfHCInOctets This Time: %d", ip, ifNameTag, ifStat.IfHCInOctets)
+									log.Printf("%s, %s IfHCInOctets Last Time: %d", ip, ifNameTag, lastifStat.IfHCInOctets)
 								}
-								if limitCheck(IfHCOutOctets, speedlimit) {
+								if limitCheck(IfHCOutOctets, speedlimit) && speedlimit > 0 {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.Out", IfHCOutOctets, ifNameTag, ifIndexTag))
-									if speedlimit > 0 {
-										OutSpeedPercent := 100 * IfHCOutOctets / float64(ifStat.IfSpeed)
-										L = append(L, GaugeValueIp(ts, ip, "switch.if.OutSpeedPercent", OutSpeedPercent, ifNameTag, ifIndexTag))
-									}
+									OutSpeedPercent := 100 * IfHCOutOctets / float64(ifStat.IfSpeed)
+									L = append(L, GaugeValueIp(ts, ip, "switch.if.OutSpeedPercent", OutSpeedPercent, ifNameTag, ifIndexTag))
 								} else {
-									log.Println(ip, ifNameTag, "switch.if.Out ", "out of range, value is ", IfHCOutOctets)
-									log.Println("IfHCOutOctets This Time: ", ifStat.IfHCOutOctets)
-									log.Println("IfHCOutOctets Last Time: ", lastifStat.IfHCOutOctets)
+									log.Printf("%s, %s switch.if.Out out of range, value is %d", ip, ifNameTag, IfHCOutOctets)
+									log.Printf("%s, %s switch.If.Speed: %d", ip, ifNameTag, speedlimit)
+									log.Printf("%s, %s IfHCOutOctets This Time: %d", ip, ifNameTag, ifStat.IfHCOutOctets)
+									log.Printf("%s, %s IfHCOutOctets Last Time: %d", ip, ifNameTag, lastifStat.IfHCOutOctets)
+
 								}
 							}
 						}
