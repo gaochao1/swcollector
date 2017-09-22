@@ -20,7 +20,8 @@ import (
 // 4.0.5 add custom metric,custom host
 // 4.0.6.1 fix channal closed bug
 // 4.0.6.2 fix Vendor bug;add remote config api
+// 4.0.6.3 fix bugs
 const (
-	VERSION          = "4.0.6.2"
+	VERSION          = "4.0.6.3"
 	COLLECT_INTERVAL = time.Second
 )

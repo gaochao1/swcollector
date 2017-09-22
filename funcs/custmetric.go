@@ -52,10 +52,10 @@ func CustMetrics() (L []*model.MetricValue) {
 	chs := make([]chan CustM, 0)
 	for _, ip := range AliveIp {
 		if ip != "" {
-			chss := make(chan CustM)
 			for _, metric := range g.CustConfig().Metrics {
 				CustmIps := AllCustmIp(metric.IpRange)
 				if InArray(ip, CustmIps) {
+					chss := make(chan CustM)
 					go custMetrics(ip, metric, chss)
 					chs = append(chs, chss)
 				}
@@ -87,7 +87,6 @@ func custMetrics(ip string, metric *g.MetricConfig, ch chan CustM) {
 	var custm CustM
 	var custmmetric CustmMetric
 	var custmmetrics []CustmMetric
-
 	value, err := GetCustMetric(ip, g.Config().Switch.Community, metric.Oid, g.Config().Switch.SnmpTimeout, g.Config().Switch.SnmpRetry)
 	if err != nil {
 		log.Println(ip, metric.Oid, err)

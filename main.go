@@ -23,7 +23,6 @@ func main() {
 		fmt.Println(g.VERSION)
 		os.Exit(0)
 	}
-
 	g.ParseConfig(*cfg)
 	if g.Config().SwitchHosts.Enabled {
 		hostcfg := g.Config().SwitchHosts.Hosts
@@ -41,6 +40,7 @@ func main() {
 		funcs.CheckCollector()
 		os.Exit(0)
 	}
+
 	funcs.NewLastifMap()
 	funcs.BuildMappers()
 

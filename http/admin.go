@@ -1,6 +1,7 @@
 package http
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -31,16 +32,9 @@ func configAdminRoutes() {
 	})
 	http.HandleFunc("/config/reload", func(w http.ResponseWriter, r *http.Request) {
 		if g.IsTrustable(r.RemoteAddr) {
-			g.ParseConfig(g.ConfigFile)
-			if g.Config().SwitchHosts.Enabled {
-				hostcfg := g.Config().SwitchHosts.Hosts
-				g.ParseHostConfig(hostcfg)
-			}
-			if g.Config().CustomMetrics.Enabled {
-				custMetrics := g.Config().CustomMetrics.Template
-				g.ParseCustConfig(custMetrics)
-			}
-			RenderDataJson(w, g.Config())
+			g.SetReloadType(true)
+			log.Println("config will be reload in next interval")
+			RenderDataJson(w, "reload type on")
 		} else {
 			w.Write([]byte("no privilege"))
 		}

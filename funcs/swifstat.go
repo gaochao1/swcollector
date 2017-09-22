@@ -126,6 +126,18 @@ func SwIfMetrics() (L []*model.MetricValue) {
 }
 
 func swIfMetrics() (L []*model.MetricValue) {
+	if g.ReloadType() {
+		g.ParseConfig(g.ConfigFile)
+		if g.Config().SwitchHosts.Enabled {
+			hostcfg := g.Config().SwitchHosts.Hosts
+			g.ParseHostConfig(hostcfg)
+		}
+		if g.Config().CustomMetrics.Enabled {
+			custMetrics := g.Config().CustomMetrics.Template
+			g.ParseCustConfig(custMetrics)
+		}
+		AliveIp = nil
+	}
 	initVariable()
 	ts := time.Now().Unix()
 	allIp := AllSwitchIp()
@@ -355,7 +367,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 								IfHCOutOctets := 8 * (float64(ifStat.IfHCOutOctets) - float64(lastifStat.IfHCOutOctets)) / float64(interval)
 								if limitCheck(IfHCInOctets, speedlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.In", IfHCInOctets, ifNameTag, ifIndexTag))
-									if speedlimit > 0 {
+									if ifStat.IfSpeed > 0 {
 										InSpeedPercent := 100 * IfHCInOctets / float64(ifStat.IfSpeed)
 										L = append(L, GaugeValueIp(ts, ip, "switch.if.InSpeedPercent", InSpeedPercent, ifNameTag, ifIndexTag))
 									}
@@ -366,7 +378,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 								}
 								if limitCheck(IfHCOutOctets, speedlimit) {
 									L = append(L, GaugeValueIp(ts, ip, "switch.if.Out", IfHCOutOctets, ifNameTag, ifIndexTag))
-									if speedlimit > 0 {
+									if ifStat.IfSpeed > 0 {
 										OutSpeedPercent := 100 * IfHCOutOctets / float64(ifStat.IfSpeed)
 										L = append(L, GaugeValueIp(ts, ip, "switch.if.OutSpeedPercent", OutSpeedPercent, ifNameTag, ifIndexTag))
 									}

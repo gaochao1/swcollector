@@ -1,4 +1,17 @@
 # Changelog #
+## 4.0.6.3 ##
+#### bug修复 ####
+1. 现在当 tag 为空时，debug 应该会正确打印对应的日志了
+2. 修复了一个当自定义 oid 超过 2 项，且 oid 不正确无法采集到信息时，swcollector 会异常崩溃的 bug
+3. 修复了一个当 speedlimit 使用指定值（而非自动采用接口速率 ifSpeed)作为限制时，接口的 speedPercent 无法正确采集的 bug
+#### 改进 ####
+1. 配置热重载模式调整，现在 reload 后会在下一个采集周期时重载配置。并清空 AliveIp，因此配置中移除的 IP 可以正确生效了
+2. swcollector 自带的 http 页，现在应该能更快速的显示了
+3. swcollector 自带的 http 页，现在支持更多交换机的 sysmodle 了
+4. cpu 和 mem 现在对于老版本的 H3C (H3C Comware Platform Software Comware software, Version 3.10)，应该也能正确采集到了
+
+
+# Changelog #
 ## 4.0.6.2 ##
 #### 新功能 ####
 1. 增加了动态重载配置的功能，详见 [README](https://github.com/gaochao1/swcollector/blob/master/README.md})

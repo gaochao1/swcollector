@@ -71,6 +71,10 @@ func SendToTransfer(metrics []*model.MetricValue) {
 		for _, metric := range metrics {
 			metric_tags := strings.Split(metric.Tags, ",")
 			if in_array(metric.Endpoint, debug_endpoints) && in_array(metric.Metric, debug_metrics) {
+				if debug_tags == "" {
+					log.Printf("=> <Total=%d> %v\n", len(metrics), metric)
+					continue
+				}
 				if array_include(debug_Tags, metric_tags) {
 					log.Printf("=> <Total=%d> %v\n", len(metrics), metric)
 				}

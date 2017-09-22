@@ -46,10 +46,12 @@ CPU和内存的OID私有，根据设备厂家和OS版本可能不同。目前测
 * Huawei VRP(Version 5.130)
 * Huawei VRP(Version 5.70)
 * Juniper JUNOS(Version 10)
+* H3C(Version 3.1)
 * H3C(Version 5)
 * H3C(Version 5.20)
 * H3C(Version 7)
 * DELL
+* Linux
 
 #### 二进制安装
 从[这里](https://github.com/gaochao1/swcollector/releases) 下载编译好的最新二进制版本即可。注意：这些二进制只能跑在64位Linux上

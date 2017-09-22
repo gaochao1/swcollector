@@ -84,8 +84,23 @@ type GlobalConfig struct {
 var (
 	ConfigFile string
 	config     *GlobalConfig
+	reloadType bool
 	lock       = new(sync.RWMutex)
+	rlock      = new(sync.RWMutex)
 )
+
+func SetReloadType(t bool) {
+	rlock.RLock()
+	defer rlock.RUnlock()
+	reloadType = t
+	return
+}
+
+func ReloadType() bool {
+	rlock.RLock()
+	defer rlock.RUnlock()
+	return reloadType
+}
 
 func Config() *GlobalConfig {
 	lock.RLock()
@@ -119,7 +134,7 @@ func ParseConfig(cfg string) {
 	defer lock.Unlock()
 
 	config = &c
-
+	SetReloadType(false)
 	log.Println("read config file:", cfg, "successfully")
 
 }
