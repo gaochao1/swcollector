@@ -9,8 +9,8 @@ import (
 )
 
 type DebugmetricConfig struct {
-	Endpoints []string `json:"endpoints`
-	Metrics   []string `json:"metrics`
+	Endpoints []string `json:"endpoints"`
+	Metrics   []string `json:"metrics"`
 	Tags      string   `json:"tags"`
 }
 
@@ -39,11 +39,11 @@ type SwitchConfig struct {
 	DiscardsPktlimit      float64  `json:"discardsPktlimit"`
 	IgnoreErrors          bool     `json:"ignoreErrors"`
 	ErrorsPktlimit        float64  `json:"errorsPktlimit"`
-	IgnoreUnknownProtos   bool     `json:"ignoreUnknownProtos`
+	IgnoreUnknownProtos   bool     `json:"ignoreUnknownProtos"`
 	UnknownProtosPktlimit float64  `json:"unknownProtosPktlimit"`
-	IgnoreOutQLen         bool     `json:"ignoreOutQLen`
+	IgnoreOutQLen         bool     `json:"ignoreOutQLen"`
 	OutQLenPktlimit       float64  `json:"outQLenPktlimit"`
-	LimitCon              int      `json:limitCon`
+	LimitCon              int      `json:"limitCon"`
 	LimitConcur           int      `json:"limitConcur"`
 	FastPingMode          bool     `json:"fastPingMode"`
 }
@@ -58,26 +58,26 @@ type TransferConfig struct {
 type HttpConfig struct {
 	Enabled  bool     `json:"enabled"`
 	Listen   string   `json:"listen"`
-	TrustIps []string `json:trustIps`
+	TrustIps []string `json:"trustIps"`
 }
 
 type SwitchHostsConfig struct {
-	Enabled bool   `json:enabled`
-	Hosts   string `json:hosts`
+	Enabled bool   `json:"enabled"`
+	Hosts   string `json:"hosts"`
 }
 
 type CustomMetricsConfig struct {
-	Enabled  bool   `json:enbaled`
-	Template string `json:template`
+	Enabled  bool   `json:"enbaled"`
+	Template string `json:"template"`
 }
 
 type GlobalConfig struct {
 	Debug         bool                 `json:"debug"`
-	Debugmetric   *DebugmetricConfig   `json:"debugmetric`
+	Debugmetric   *DebugmetricConfig   `json:"debugmetric"`
 	Switch        *SwitchConfig        `json:"switch"`
 	Transfer      *TransferConfig      `json:"transfer"`
-	SwitchHosts   *SwitchHostsConfig   `json:switchhosts`
-	CustomMetrics *CustomMetricsConfig `json:customMetrics`
+	SwitchHosts   *SwitchHostsConfig   `json:"switchhosts"`
+	CustomMetrics *CustomMetricsConfig `json:"customMetrics"`
 	Http          *HttpConfig          `json:"http"`
 }
 
