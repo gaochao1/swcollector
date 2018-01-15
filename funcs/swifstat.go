@@ -271,7 +271,7 @@ func swIfMetrics() (L []*model.MetricValue) {
 										log.Println(ip, ifNameTag, "switch.if.InErrors", "out of range, value is", IfInErrors, "Limit is", errorlimit)
 										log.Println("IfInErrors This Time:", ifStat.IfInErrors, "Last Time:", lastifStat.IfInErrors, "ts", ts, "limit", errorlimit)
 									}
-									if limitCheck(IfOutErrors, errorlimit) && lastifStat.IfOutErrors {
+									if limitCheck(IfOutErrors, errorlimit) && lastifStat.IfOutErrors > 0 {
 										L = append(L, GaugeValueIp(ts, ip, "switch.if.OutErrors", IfOutErrors, ifNameTag, ifIndexTag))
 									} else {
 										log.Println(ip, ifNameTag, "switch.if.OutErrors", "out of range, value is", IfOutErrors, "Limit is", errorlimit)
