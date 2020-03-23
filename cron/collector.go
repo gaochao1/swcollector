@@ -1,12 +1,13 @@
 package cron
 
 import (
-	"github.com/gaochao1/swcollector/funcs"
-	"github.com/gaochao1/swcollector/g"
-	"github.com/open-falcon/common/model"
 	"log"
 	"math"
 	"time"
+
+	"github.com/gaochao1/swcollector/funcs"
+	"github.com/gaochao1/swcollector/g"
+	"github.com/open-falcon/common/model"
 )
 
 func Collect() {
@@ -66,8 +67,11 @@ func MetricToTransfer(sec int64, fns []func() []*model.MetricValue) {
 			mvsSend = mvs[n*(i-1) : (n*(i-1))+int(mod)]
 		}
 		time.Sleep(100 * time.Millisecond)
-
-		go g.SendToTransfer(mvsSend)
+		if g.Config().Transfer.N9eMode {
+			go g.N9ePush(mvsSend)
+		} else {
+			go g.SendToTransfer(mvsSend)
+		}
 	}
 
 	endTime := time.Now()

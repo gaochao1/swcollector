@@ -1,4 +1,4 @@
-
+*.exe
 cfg.json
 
 var/app.pid

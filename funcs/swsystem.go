@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/gaochao1/sw"
 	"github.com/gaochao1/swcollector/g"
@@ -38,17 +39,15 @@ func swSystemInfo(ip string, ch chan SwSystem) {
 	var swSystem SwSystem
 	swSystem.Ip = ip
 
-	//ping timeout.Millisecond
-	timeout := 1000
-	pingCount := 1
+	timeout := g.Config().Switch.PingTimeout * g.Config().Switch.PingRetry
 
-	ping, err := sw.PingStatSummary(ip, pingCount, timeout)
+	ping, err := sw.PingRtt(ip, timeout, fastPingMode)
 	if err != nil {
 		log.Println(err)
 		ch <- swSystem
 		return
 	} else {
-		swSystem.Ping = ping["max"]
+		swSystem.Ping = strconv.FormatFloat(ping, 'f', 2, 64)
 
 		uptime, err := sw.SysUpTime(ip, g.Config().Switch.Community, timeout)
 		if err != nil {

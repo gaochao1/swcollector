@@ -47,6 +47,7 @@
 	},
     "transfer": {
         "enabled": true,
+        "n9eMode":false,
         "addr": "127.0.0.1:8433",
         "interval": 300,
         "timeout": 1000
