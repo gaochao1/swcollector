@@ -136,7 +136,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 	},
     "transfer": {
         "enabled": true,
-        "n9eMode":false,  # 标为 true 时，将以 msgpack 方式发送数据，这样可以支持 n9e。注意将 addr 替换为 n9e 的地址和端口
+        "n9eMode":false,  # 标为 true 时，将以 msgpack 方式发送数据，这样可以支持 n9e。注意将 addr 替换为 n9e 的地址和端口, n9e transfer msg接收默认端口是5811。
         "addr": "127.0.0.1:8433",
         "interval": 300,
         "timeout": 1000
