@@ -22,7 +22,8 @@ import (
 // 4.0.6.2 fix Vendor bug;add remote config api
 // 4.0.6.3 fix bugs
 // 4.1.0 support n9e transfer mode
+// 4.1.1 n9e mode support debug
 const (
-	VERSION          = "4.1.0"
+	VERSION          = "4.1.1"
 	COLLECT_INTERVAL = time.Second
 )

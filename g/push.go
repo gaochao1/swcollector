@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/rpc"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/didi/nightingale/src/dataobj"
@@ -36,6 +37,36 @@ func N9ePush(items []*model.MetricValue) {
 
 		rpcCodec := codec.MsgpackSpecRpc.ClientCodec(bufconn, &mh)
 		client := rpc.NewClientWithCodec(rpcCodec)
+
+		debug := Config().Debug
+		debug_endpoints := Config().Debugmetric.Endpoints
+		debug_items := Config().Debugmetric.Metrics
+		debug_tags := Config().Debugmetric.Tags
+		debug_Tags := strings.Split(debug_tags, ",")
+
+		if Config().SwitchHosts.Enabled {
+			hosts := HostConfig().Hosts
+			for i, metric := range items {
+				if hostname, ok := hosts[metric.Endpoint]; ok {
+					items[i].Endpoint = hostname
+				}
+			}
+		}
+
+		if debug {
+			for _, metric := range items {
+				metric_tags := strings.Split(metric.Tags, ",")
+				if in_array(metric.Endpoint, debug_endpoints) && in_array(metric.Metric, debug_items) {
+					if debug_tags == "" {
+						log.Printf("=> <Total=%d> %v\n", len(items), metric)
+						continue
+					}
+					if array_include(debug_Tags, metric_tags) {
+						log.Printf("=> <Total=%d> %v\n", len(items), metric)
+					}
+				}
+			}
+		}
 
 		var reply dataobj.TransferResp
 		err = client.Call("Transfer.Push", items, &reply)
