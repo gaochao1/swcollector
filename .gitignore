@@ -1,8 +1,12 @@
 *.exe
+*.sw[po]
+
+.idea
+.DS_Store
+
 cfg.json
 
 var/app.pid
-
 var/app.log
 
-falcon-swcollector
+falcon-swcollector*
