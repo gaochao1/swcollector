@@ -24,6 +24,6 @@ import (
 // 4.1.0 support n9e transfer mode
 // 4.1.1 n9e mode support debug
 const (
-	VERSION          = "4.1.1"
+	VERSION          = "4.1.2"
 	COLLECT_INTERVAL = time.Second
 )
