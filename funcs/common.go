@@ -1,9 +1,10 @@
 package funcs
 
 import (
+	"strings"
+
 	"github.com/gaochao1/swcollector/g"
 	"github.com/open-falcon/common/model"
-	"strings"
 )
 
 func NewMetricValue(metric string, val interface{}, dataType string, tags ...string) *model.MetricValue {
@@ -14,9 +15,14 @@ func NewMetricValue(metric string, val interface{}, dataType string, tags ...str
 	}
 
 	size := len(tags)
-
+	validTags := []string{}
+	for _, t := range tags {
+		if t != "" {
+			validTags = append(validTags, t)
+		}
+	}
 	if size > 0 {
-		mv.Tags = strings.Join(tags, ",")
+		mv.Tags = strings.Join(validTags, ",")
 	}
 
 	return &mv
@@ -43,9 +49,14 @@ func NewMetricValueIp(TS int64, ip, metric string, val interface{}, dataType str
 	}
 
 	size := len(tags)
-
+	validTags := []string{}
+	for _, t := range tags {
+		if t != "" {
+			validTags = append(validTags, t)
+		}
+	}
 	if size > 0 {
-		mv.Tags = strings.Join(tags, ",")
+		mv.Tags = strings.Join(validTags, ",")
 	}
 
 	return &mv

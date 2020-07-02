@@ -100,6 +100,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
             "172.16.114.233" 
  		],
 		"gosnmp":true,         #是否使用 gosnmp 采集, false 则使用 snmpwalk
+		"index_tag":false,     #去掉 index tag 以在 n9e 上获得更好体验
  		"pingTimeout":300,     #Ping超时时间，单位毫秒
 		"pingRetry":4,         #Ping探测重试次数
 		"community":"public",  #SNMP认证字符串

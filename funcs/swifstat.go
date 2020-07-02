@@ -175,7 +175,10 @@ func swIfMetrics() (L []*model.MetricValue) {
 
 				for _, ifStat := range *chIfStat.IfStatsList {
 					ifNameTag := "ifName=" + ifStat.IfName
-					ifIndexTag := "ifIndex=" + strconv.Itoa(ifStat.IfIndex)
+					ifIndexTag := ""
+					if g.Config().Switch.IndexTag {
+						ifIndexTag = "ifIndex=" + strconv.Itoa(ifStat.IfIndex)
+					}
 					ip := chIfStat.Ip
 					if ignoreOperStatus == false {
 						L = append(L, GaugeValueIp(ifStat.TS, ip, "switch.if.OperStatus", ifStat.IfOperStatus, ifNameTag, ifIndexTag))
