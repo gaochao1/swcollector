@@ -132,7 +132,7 @@ func AllSwitchIp() (allIp []string) {
 }
 
 func SwIfMetrics() (L []*model.MetricValue) {
-	if g.Config().Switch.Enabled && len(g.Config().Switch.IpRange) > 0 {
+	if g.Config().Switch.Enabled {
 		return swIfMetrics()
 	}
 	return

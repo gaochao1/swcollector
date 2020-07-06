@@ -25,6 +25,6 @@ import (
 // 4.1.1 n9e mode support debug
 // 4.2.0 support get allip from ecmc nodes
 const (
-	VERSION          = "4.2.0"
+	VERSION          = "4.2.1"
 	COLLECT_INTERVAL = time.Second
 )
