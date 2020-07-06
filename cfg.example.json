@@ -37,7 +37,20 @@
 		"fastPingMode": true,
 		"limitConcur": 1000,
 		"limitCon": 4
- 	}, 
+ 	},
+	"ecmc":{
+		"enabled":false,
+		"addr":"http://ecmc.example.com",
+		"token":"x-user-token",
+		"nodes":[1,2,3,4]
+	},	
+	"n9e":{
+		"enabled":true,
+		"addr":"http://n9e.example.com",
+		"user":"root",
+		"pass":"1234",
+		"nodes":[1,2,3,4]
+	},	
 	"switchhosts":{
 		"enabled":false,
 		"hosts":"./hosts.json"

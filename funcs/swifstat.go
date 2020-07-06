@@ -104,7 +104,7 @@ func initVariable() {
 	ignoreOutQLen = g.Config().Switch.IgnoreOutQLen
 }
 
-func AllSwitchIp() (allIp []string) {
+func GetAllByIpRange() (allIp []string) {
 	switchIp := g.Config().Switch.IpRange
 
 	if len(switchIp) > 0 {
@@ -115,6 +115,19 @@ func AllSwitchIp() (allIp []string) {
 			}
 		}
 	}
+	return allIp
+}
+
+func AllSwitchIp() (allIp []string) {
+	if g.Config().Ecmc.Enabled {
+		allIp = GetAllByIpByEcmc()
+		return allIp
+	}
+	if g.Config().N9e.Enabled {
+		allIp = GetAllByIpByN9e()
+		return allIp
+	}
+	allIp = GetAllByIpRange()
 	return allIp
 }
 

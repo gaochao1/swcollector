@@ -127,6 +127,19 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 		"limitConcur": 1000, #交换机采集的并发限制
 		"limitCon": 4 #对于单台交换机上，多个指标采集的并发限制
  	}, 
+	"ecmc":{     # 从 ecmc，即夜莺的商业版上获取待监控的 ip 列表，此时 switch 中配置的 ipRange 会被忽略，当 ecmc 和 n9e 同时配置时，ecmc 优先，n9e 的配置忽略
+		"enabled":false, # true 即开启
+		"addr":"http://ecmc.example.com", # ecmc 的地址
+		"token":"x-user-token", # ecmc 供 api 调用的 token,在个人设置-密钥管理中配置
+		"nodes":[1,2,3,4] # 监控 ip 所在的 node id 列表，鼠标点在 node 上能看到节点 id
+	},	
+	"n9e":{ # 从 n9e ，即夜莺的开源版上获取待监控的 ip 列表，此时 switch 中配置的 ipRange 会被忽略。
+		"enabled":true,   # true 即开启
+		"addr":"http://n9e.example.com", # n9e 的地址
+		"user":"root", # 用户名
+		"pass":"1234", # 密码
+		"nodes":[1,2,3,4] # 监控 ip 所在的 node id 列表，可以先通过 curl -u root:1234 http://n9e.example.com/api/portal/tree 看下自己节点的 id 号
+	},	
 	"switchhosts":{
 		"enabled":false,
 		"hosts":"./hosts.json"  #自定义的host与Ip地址对应表，如果配置，则上报时会用这里的host替换ip地址

@@ -1,4 +1,14 @@
 # Changelog #
+## 4.2.0 ##
+#### 新功能 ####
+1. 现在支持通过 ecmc/n9e 来获取监控的 ip 列表，无需手动配置配置文件了，详见 [README](https://github.com/gaochao1/swcollector/blob/master/README.md})
+
+# Changelog #
+## 4.1.0 ##
+#### 新功能 ####
+1. 现在支持推送数据到 n9e 了
+
+# Changelog #
 ## 4.0.6.3 ##
 #### bug修复 ####
 1. 现在当 tag 为空时，debug 应该会正确打印对应的日志了

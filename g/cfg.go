@@ -73,10 +73,27 @@ type CustomMetricsConfig struct {
 	Template string `json:template`
 }
 
+type EcmcConfig struct {
+	Enabled bool    `json:"enabled"`
+	Addr    string  `json:"addr"`
+	Token   string  `json:"token"`
+	Nodes   []int64 `json:"nodes"`
+}
+
+type N9eConfig struct {
+	Enabled bool    `json:"enabled"`
+	Addr    string  `json:"addr"`
+	User    string  `json:"user"`
+	Pass    string  `json:"pass"`
+	Nodes   []int64 `json:"nodes"`
+}
+
 type GlobalConfig struct {
 	Debug         bool                 `json:"debug"`
 	Debugmetric   *DebugmetricConfig   `json:"debugmetric`
 	Switch        *SwitchConfig        `json:"switch"`
+	Ecmc          EcmcConfig           `json:"ecmc"`
+	N9e           N9eConfig            `json:"n9e"`
 	Transfer      *TransferConfig      `json:"transfer"`
 	SwitchHosts   *SwitchHostsConfig   `json:switchhosts`
 	CustomMetrics *CustomMetricsConfig `json:customMetrics`
