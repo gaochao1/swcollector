@@ -45,7 +45,7 @@
 		"nodes":[1,2,3,4]
 	},	
 	"n9e":{
-		"enabled":true,
+		"enabled":false,
 		"addr":"http://n9e.example.com",
 		"user":"root",
 		"pass":"1234",
