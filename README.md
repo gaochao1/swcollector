@@ -134,7 +134,7 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 		"nodes":[1,2,3,4] # 监控 ip 所在的 node id 列表，鼠标点在 node 上能看到节点 id
 	},	
 	"n9e":{ # 从 n9e ，即夜莺的开源版上获取待监控的 ip 列表，此时 switch 中配置的 ipRange 会被忽略。
-		"enabled":true,   # true 即开启
+		"enabled":false,   # true 即开启
 		"addr":"http://n9e.example.com", # n9e 的地址
 		"user":"root", # 用户名
 		"pass":"1234", # 密码
