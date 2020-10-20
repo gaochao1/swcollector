@@ -139,6 +139,12 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 		"user":"root", # 用户名
 		"pass":"1234", # 密码
 		"nodes":[1,2,3,4] # 监控 ip 所在的 node id 列表，可以先通过 curl -u root:1234 http://n9e.example.com/api/portal/tree 看下自己节点的 id 号
+	},
+	"n9e_v3":{ # 从 n9e ，即夜莺的开源版上获取待监控的 ip 列表，此时 switch 中配置的 ipRange 会被忽略。
+		"enabled":true,  # true 即开启
+		"addr":"http://n9ev3.example.com",  # n9e 的地址
+		"token":"x-user-token",  # n9ev3 供 api 调用的 token,在个人设置-密钥管理中配置
+		"nodes":[4] # 监控 ip 所在的 node id 列表，鼠标点在 node 上能看到节点 id
 	},	
 	"switchhosts":{
 		"enabled":false,
@@ -150,8 +156,8 @@ swcollector需要部署到有交换机SNMP访问权限的服务器上。
 	},
     "transfer": {
         "enabled": true,
-        "n9eMode":false,  # 标为 true 时，将以 msgpack 方式发送数据，这样可以支持 n9e。注意将 addr 替换为 n9e 的地址和端口, n9e transfer msg接收默认端口是5811。
-        "addr": "127.0.0.1:8433",
+        "n9eMode":true,  # 标为 true 时，将以 msgpack 方式发送数据，这样可以支持 n9e。注意将 addr 替换为 n9e 的地址和端口, n9e transfer msg接收默认端口是5811。
+        "addr": "127.0.0.1:8009",
         "interval": 300,
         "timeout": 1000
     },
