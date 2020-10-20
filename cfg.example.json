@@ -1,7 +1,7 @@
 {
     "debug": false,
 	"debugmetric":{
-		"endpoints":["vpn-lw"],
+		"endpoints":["endpoint-vpn"],
 		"metrics":["AnyconnectSession","ConnectionStat"],
 		"tags":""
 	},
@@ -45,12 +45,18 @@
 		"nodes":[1,2,3,4]
 	},	
 	"n9e":{
-		"enabled":true,
+		"enabled":false,
 		"addr":"http://n9e.example.com",
 		"user":"root",
 		"pass":"1234",
 		"nodes":[1,2,3,4]
-	},	
+	},
+	"n9e_v3":{
+		"enabled":true,
+		"addr":"http://n9ev3.example.com",
+		"token":"x-user-token",
+		"nodes":[4]
+	},
 	"switchhosts":{
 		"enabled":false,
 		"hosts":"./hosts.json"
@@ -61,8 +67,8 @@
 	},
     "transfer": {
         "enabled": true,
-        "n9eMode":false,
-        "addr": "127.0.0.1:8433",
+        "n9eMode":true,
+        "addr": "127.0.0.1:8009",
         "interval": 300,
         "timeout": 1000
     },

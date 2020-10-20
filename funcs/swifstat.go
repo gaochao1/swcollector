@@ -119,6 +119,10 @@ func GetAllByIpRange() (allIp []string) {
 }
 
 func AllSwitchIp() (allIp []string) {
+	if g.Config().N9eV3.Enabled {
+		allIp = GetAllByIpByN9eV3()
+		return allIp
+	}
 	if g.Config().Ecmc.Enabled {
 		allIp = GetAllByIpByEcmc()
 		return allIp

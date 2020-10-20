@@ -24,7 +24,8 @@ import (
 // 4.1.0 support n9e transfer mode
 // 4.1.1 n9e mode support debug
 // 4.2.0 support get allip from ecmc nodes
+// 4.3.0 support get allip from n9ev3
 const (
-	VERSION          = "4.2.1"
+	VERSION          = "4.3.0"
 	COLLECT_INTERVAL = time.Second
 )

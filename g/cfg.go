@@ -94,10 +94,18 @@ type GlobalConfig struct {
 	Switch        *SwitchConfig        `json:"switch"`
 	Ecmc          EcmcConfig           `json:"ecmc"`
 	N9e           N9eConfig            `json:"n9e"`
+	N9eV3         N9eV3Config          `json:"n9e_v3"`
 	Transfer      *TransferConfig      `json:"transfer"`
 	SwitchHosts   *SwitchHostsConfig   `json:switchhosts`
 	CustomMetrics *CustomMetricsConfig `json:customMetrics`
 	Http          *HttpConfig          `json:"http"`
+}
+
+type N9eV3Config struct {
+	Enabled bool    `json:"enabled"`
+	Addr    string  `json:"addr"`
+	Token   string  `json:"token"`
+	Nodes   []int64 `json:"nodes"`
 }
 
 var (
