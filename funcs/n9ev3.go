@@ -29,30 +29,34 @@ type N9eV3Host struct {
 }
 
 func GetN9eV3NodeHosts(nodeID int64) (hosts []N9eV3Host, err error) {
-
-	apiAddr := fmt.Sprintf("%s/api/rdb/node/%d/resources", g.Config().N9eV3.Addr, nodeID)
-	headers := map[string]string{}
-	headers["x-user-token"] = g.Config().N9eV3.Token
-	var res []byte
-	res, err = HTTPGet(apiAddr, headers)
-	if err != nil {
-		return
+	p := 1
+	for {
+		apiAddr := fmt.Sprintf("%s/api/rdb/node/%d/resources?p=%d", g.Config().N9eV3.Addr, nodeID, p)
+		headers := map[string]string{}
+		headers["x-user-token"] = g.Config().N9eV3.Token
+		var res []byte
+		res, err = HTTPGet(apiAddr, headers)
+		if err != nil {
+			return
+		}
+		var n9eV3Res EcmcRes
+		if err = json.Unmarshal(res, &n9eV3Res); err != nil {
+			return
+		}
+		if n9eV3Res.Err != "" {
+			err = errors.New(n9eV3Res.Err)
+			return
+		}
+		var nodeHosts N9eV3NodeHosts
+		if err = json.Unmarshal(n9eV3Res.Dat, &nodeHosts); err != nil {
+			return
+		}
+		if len(nodeHosts.List) == 0 {
+			break
+		}
+		hosts = append(hosts, nodeHosts.List...)
+		p = p + 1
 	}
-	var n9eV3Res EcmcRes
-	if err = json.Unmarshal(res, &n9eV3Res); err != nil {
-		return
-	}
-	if n9eV3Res.Err != "" {
-		err = errors.New(n9eV3Res.Err)
-		return
-	}
-	var nodeHosts N9eV3NodeHosts
-	if err = json.Unmarshal(n9eV3Res.Dat, &nodeHosts); err != nil {
-		return
-	}
-
-	hosts = nodeHosts.List
-
 	return
 }
 

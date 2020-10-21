@@ -26,6 +26,6 @@ import (
 // 4.2.0 support get allip from ecmc nodes
 // 4.3.0 support get allip from n9ev3
 const (
-	VERSION          = "4.3.0"
+	VERSION          = "4.3.1"
 	COLLECT_INTERVAL = time.Second
 )
