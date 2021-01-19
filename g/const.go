@@ -25,7 +25,8 @@ import (
 // 4.1.1 n9e mode support debug
 // 4.2.0 support get allip from ecmc nodes
 // 4.3.0 support get allip from n9ev3
+// 4.3.2 more sw support, support aruba/cisco wireless controller
 const (
-	VERSION          = "4.3.1"
+	VERSION          = "4.3.2"
 	COLLECT_INTERVAL = time.Second
 )
