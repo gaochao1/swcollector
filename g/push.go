@@ -69,7 +69,7 @@ func N9ePush(items []*model.MetricValue) {
 		}
 
 		var reply dataobj.TransferResp
-		err = client.Call("Transfer.Push", items, &reply)
+		err = client.Call(Config().Transfer.RpcMethod, items, &reply)
 		client.Close()
 		if err != nil {
 			log.Println(err)

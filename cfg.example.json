@@ -68,6 +68,7 @@
     "transfer": {
         "enabled": true,
         "n9eMode":true,
+        "rpcMethod":"Transfer.Push",
         "addr": "127.0.0.1:8009",
         "interval": 300,
         "timeout": 1000
